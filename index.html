@@ -3,293 +3,685 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXUS OS v9.0 - Robust Parser</title>
-  <script src="https://js.puter.com/v2/"></script>
+  <title>NEXUS OS v9.0 - Sentient Operating System</title>
+  <script src="https://js.puter.com/v2/" async></script>
   <style>
-    :root {
-      --cyan: #00f0ff; --magenta: #ff00aa; --green: #00ff88; --bg: #000001;
-      --border: rgba(0, 240, 255, 0.3); --red: #ff4444;
-    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Courier New', monospace; background: var(--bg); color: #e5e7eb; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     
-    .container { width: 100%; max-width: 900px; padding: 20px; text-align: center; z-index: 2; }
-    
-    h1 { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); margin-bottom: 10px; font-size: 2.5rem; letter-spacing: 2px; }
-    
-    .status-bar { 
-      margin-bottom: 20px; font-size: 0.9rem; font-family: monospace;
-      padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.5); border: 1px solid var(--border);
+    :root {
+      --cyan: #00f0ff;
+      --magenta: #ff00aa;
+      --green: #00ff88;
+      --yellow: #fbbf24;
+      --bg: #000001;
+      --card-bg: rgba(0, 20, 30, 0.8);
+      --border: rgba(0, 240, 255, 0.2);
     }
-    .status-ok { color: var(--green); }
-    .status-error { color: var(--red); border-color: var(--red); }
-
-    .input-card { background: rgba(0, 20, 30, 0.9); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
     
-    .prompt-input { width: 100%; padding: 15px; background: rgba(0,0,0,0.6); border: 1px solid var(--border); color: #fff; font-family: inherit; font-size: 16px; border-radius: 6px; margin-bottom: 15px; outline: none; }
-    .prompt-input:focus { border-color: var(--cyan); }
-
-    .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    button { padding: 12px 24px; border: none; cursor: pointer; font-family: inherit; font-weight: bold; transition: 0.2s; border-radius: 6px; font-size: 14px; }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: var(--bg);
+      color: #e5e7eb;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
     
-    .btn-primary { background: linear-gradient(135deg, var(--cyan), #00a0cc); color: #000; }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 240, 255, 0.4); }
+    /* Boot Screen */
+    #boot-screen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 9999; background: var(--bg);
+    }
     
-    .btn-secondary { background: transparent; border: 1px solid var(--magenta); color: var(--magenta); }
-
-    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 30px; }
-    .gallery-item { aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--magenta); background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; }
-    .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
-    .gallery-item.loading { border-style: dashed; animation: pulse 2s infinite; }
-    .gallery-item.loading::after { content: "GENERATING..."; color: var(--cyan); font-size: 12px; }
-
-    .debug-log { background: rgba(0, 5, 10, 0.9); border: 1px solid #333; padding: 10px; margin-top: 20px; font-size: 12px; color: #888; text-align: left; min-height: 60px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
-
-    .notification { position: fixed; top: 20px; right: 20px; background: var(--green); color: #000; padding: 10px 20px; border-radius: 4px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 100; }
-    .notification.show { opacity: 1; }
-    .notification.error { background: var(--red); color: #fff; }
-
-    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-
-    #particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+    .boot-logo {
+      font-size: 5rem; font-weight: bold; color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan), 0 0 20px var(--cyan), 0 0 40px var(--cyan);
+      margin-bottom: 0.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .boot-version { color: var(--magenta); font-size: 0.875rem; letter-spacing: 0.3em; margin-bottom: 2rem; }
+    
+    .boot-terminal {
+      width: 320px; height: 150px;
+      background: rgba(0, 10, 20, 0.9);
+      border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 8px;
+      padding: 12px; font-size: 11px;
+      margin-bottom: 1rem; overflow: hidden;
+    }
+    
+    .boot-line { margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .boot-line.active { color: var(--cyan); }
+    .boot-line.done { color: var(--green); }
+    
+    .boot-progress {
+      width: 320px; height: 8px;
+      background: rgba(0, 240, 255, 0.1); border-radius: 4px;
+      overflow: hidden; margin-bottom: 0.5rem;
+    }
+    
+    .boot-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--magenta));
+      border-radius: 4px; transition: width 0.3s;
+      box-shadow: 0 0 15px var(--cyan);
+    }
+    
+    .boot-percent { text-align: center; font-size: 12px; color: #6b7280; margin-bottom: 1rem; }
+    
+    .skip-btn {
+      padding: 8px 24px; background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.5); color: var(--cyan);
+      border-radius: 4px; cursor: pointer;
+      font-family: inherit; font-size: 12px;
+      transition: all 0.3s;
+    }
+    .skip-btn:hover { background: rgba(0, 240, 255, 0.2); transform: scale(1.05); }
+    
+    .hidden { display: none !important; }
+    
+    /* Main Dashboard */
+    #dashboard { min-height: 100vh; }
+    #particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    
+    .grid-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.05;
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.1) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+      background: rgba(0, 0, 1, 0.8); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    
+    .logo { font-size: 1.5rem; font-weight: bold; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); cursor: pointer; transition: transform 0.3s; }
+    .logo:hover { transform: scale(1.05); }
+    
+    .logo-badge {
+      display: inline-block; padding: 2px 8px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 4px; font-size: 12px; color: var(--cyan); margin-left: 8px;
+    }
+    
+    .status-badge { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-size: 12px; }
+    .status-badge.online { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); color: var(--green); }
+    .status-badge.standby { background: rgba(255, 170, 0, 0.1); border: 1px solid rgba(255, 170, 0, 0.3); color: #ffaa00; }
+    
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+    .status-badge.online .status-dot { background: var(--green); }
+    .status-badge.standby .status-dot { background: #ffaa00; }
+    
+    nav { display: flex; gap: 4px; }
+    
+    .nav-btn {
+      padding: 8px 12px; background: transparent; border: none;
+      color: #9ca3af; font-family: inherit; font-size: 12px;
+      cursor: pointer; border-radius: 8px; transition: all 0.3s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .nav-btn:hover { background: rgba(0, 240, 255, 0.1); }
+    .nav-btn.active { color: var(--cyan); background: rgba(0, 240, 255, 0.1); }
+    
+    main { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 100px 24px 40px; }
+    
+    .hero { text-align: center; margin-bottom: 4rem; }
+    .hero h1 {
+      font-size: clamp(2rem, 6vw, 4rem); font-weight: bold; margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--magenta) 50%, var(--cyan) 100%);
+      background-size: 200% 200%; -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; background-clip: text;
+      animation: gradient-shift 3s ease infinite;
+    }
+    .hero p { font-size: 1.125rem; color: #9ca3af; max-width: 600px; margin: 0 auto 2rem; }
+    .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    
+    .btn {
+      padding: 12px 24px; border-radius: 8px;
+      font-family: inherit; font-size: 14px; cursor: pointer;
+      transition: all 0.3s; border: none;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--cyan), #00a0cc); color: #000; box-shadow: 0 0 30px rgba(0, 240, 255, 0.4); }
+    .btn-primary:hover { transform: scale(1.05); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    
+    .btn-secondary { background: transparent; border: 1px solid rgba(255, 0, 170, 0.5); color: var(--magenta); }
+    .btn-secondary:hover { box-shadow: 0 0 20px rgba(255, 0, 170, 0.3); }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 3rem; }
+    .stat-card { padding: 24px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; transition: all 0.3s; cursor: pointer; }
+    .stat-card:hover { transform: scale(1.02); border-color: rgba(0, 255, 136, 0.3); }
+    
+    .stat-label { font-size: 12px; color: #9ca3af; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .stat-value { font-size: 1.75rem; font-weight: bold; }
+    .stat-value.cyan { color: var(--cyan); } .stat-value.magenta { color: var(--magenta); }
+    .stat-value.green { color: var(--green); } .stat-value.yellow { color: var(--yellow); }
+    
+    .progress-bar { height: 4px; background: rgba(0, 240, 255, 0.1); border-radius: 2px; margin-top: 12px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--magenta)); border-radius: 2px; transition: width 0.5s; }
+    
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .feature-card { padding: 24px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; transition: all 0.3s; }
+    .feature-card:hover { transform: translateY(-8px); }
+    .feature-icon { font-size: 2.5rem; margin-bottom: 1rem; transition: transform 0.3s; }
+    .feature-card:hover .feature-icon { transform: scale(1.1); }
+    .feature-title { font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem; }
+    .feature-desc { font-size: 14px; color: #9ca3af; margin-bottom: 0.75rem; }
+    .feature-stat { display: inline-block; padding: 4px 8px; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 4px; font-size: 12px; color: var(--cyan); }
+    
+    /* Terminal */
+    .terminal { background: rgba(0, 5, 10, 0.95); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 12px; overflow: hidden; margin-bottom: 3rem; }
+    .terminal-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: rgba(0, 240, 255, 0.1); }
+    .terminal-dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; transition: transform 0.2s; }
+    .terminal-dot:hover { transform: scale(1.2); }
+    .terminal-dot.red { background: #ff5f56; } .terminal-dot.yellow { background: #ffbd2e; } .terminal-dot.green { background: #27ca40; }
+    .terminal-title { margin-left: 16px; font-size: 12px; color: #6b7280; }
+    .terminal-body { padding: 16px; height: 250px; overflow-y: auto; font-size: 13px; }
+    .terminal-line { margin-bottom: 8px; }
+    .terminal-prompt { color: var(--green); }
+    .terminal-path { color: #60a5fa; }
+    .terminal-input { background: transparent; border: none; outline: none; color: var(--cyan); font-family: inherit; font-size: inherit; width: calc(100% - 150px); caret-color: var(--cyan); }
+    .terminal-output { white-space: pre-wrap; margin-top: 4px; padding-left: 8px; }
+    
+    .section-title { font-size: 1.5rem; font-weight: bold; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); margin-bottom: 2rem; text-align: center; }
+    
+    /* Settings & Art Studio specific */
+    .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .settings-card { padding: 24px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; }
+    .settings-card h3 { font-size: 1rem; color: var(--cyan); margin-bottom: 1rem; }
+    .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(0, 240, 255, 0.1); }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-label { font-size: 14px; color: #9ca3af; }
+    .setting-value { font-size: 14px; color: var(--cyan); }
+    
+    .slider { -webkit-appearance: none; width: 100%; height: 8px; background: rgba(0, 240, 255, 0.1); border-radius: 4px; margin-top: 8px; }
+    .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--cyan); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px var(--cyan); }
+    
+    .toggle { width: 48px; height: 24px; background: rgba(100, 100, 100, 0.3); border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s; }
+    .toggle.active { background: rgba(0, 255, 136, 0.3); border: 1px solid rgba(0, 255, 136, 0.5); }
+    .toggle-knob { width: 20px; height: 20px; background: #6b7280; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: all 0.3s; }
+    .toggle.active .toggle-knob { transform: translateX(24px); background: var(--green); box-shadow: 0 0 10px var(--green); }
+    
+    .settings-buttons { display: flex; justify-content: flex-end; gap: 1rem; }
+    
+    .art-input-area { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+    .art-text-input { flex: 1; padding: 14px 16px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: inherit; font-size: 14px; }
+    .art-text-input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+    
+    /* Art Progress Bar Container */
+    .art-progress-container {
+      margin-bottom: 2rem;
+      background: rgba(0, 10, 20, 0.8);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .art-status-text {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+    .art-status-label { color: var(--cyan); }
+    .art-status-percent { color: var(--green); font-weight: bold; }
+    .art-progress-track {
+      height: 6px;
+      background: rgba(0, 240, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .art-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--magenta));
+      border-radius: 3px;
+      transition: width 0.2s ease-out;
+      box-shadow: 0 0 10px var(--cyan);
+    }
+    
+    .art-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .art-item { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 0, 170, 0.3); aspect-ratio: 1; }
+    .art-item img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .notification { position: fixed; top: 80px; right: 20px; padding: 12px 24px; background: rgba(0, 255, 136, 0.2); border: 1px solid rgba(0, 255, 136, 0.5); border-radius: 8px; color: var(--green); font-size: 14px; z-index: 100; animation: slide-in 0.3s ease-out; max-width: 300px; text-align: right; }
+    
+    footer { border-top: 1px solid var(--border); padding: 24px; text-align: center; margin-top: 3rem; }
+    footer p { font-size: 14px; color: #6b7280; }
+    footer .tagline { font-size: 12px; color: #4b5563; margin-top: 8px; }
+    
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes gradient-shift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    @keyframes slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 10, 20, 0.5); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--cyan), var(--magenta)); border-radius: 3px; }
+    
+    @media (max-width: 768px) { nav { display: none; } .hero h1 { font-size: 2rem; } .stats-grid { grid-template-columns: repeat(2, 1fr); } .art-input-area { flex-direction: column; } }
   </style>
 </head>
 <body>
-  <canvas id="particles"></canvas>
-
-  <div class="container">
-    <h1>NEXUS AI STUDIO</h1>
-    
-    <div id="systemStatus" class="status-bar status-error">Checking System...</div>
-
-    <div class="input-card">
-      <input type="text" id="promptInput" class="prompt-input" placeholder="Enter prompt (e.g. Futuristic city)">
-      
-      <div class="btn-group">
-        <button id="createOneBtn" class="btn-primary" onclick="generateSingle()">CREATE (1)</button>
-        <button id="createAllBtn" class="btn-secondary" onclick="generateAll()">CREATE ALL (3)</button>
-      </div>
-    </div>
-
-    <div class="gallery" id="gallery"></div>
-    <div class="debug-log" id="debugLog">Ready.</div>
+  <div id="boot-screen">
+    <div class="boot-logo">NEXUS</div>
+    <div class="boot-version">OPERATING SYSTEM v9.0</div>
+    <div class="boot-terminal" id="boot-terminal"></div>
+    <div class="boot-progress"><div class="boot-progress-bar" id="boot-progress"></div></div>
+    <div class="boot-percent" id="boot-percent">0% Complete</div>
+    <button class="skip-btn hidden" id="skip-btn" onclick="skipBoot()">[ SKIP INTRO ]</button>
   </div>
-
-  <div class="notification" id="notification"></div>
+  
+  <div id="dashboard" class="hidden">
+    <canvas id="particles"></canvas>
+    <div class="grid-overlay"></div>
+    <header>
+      <div style="display: flex; align-items: center;">
+        <span class="logo" onclick="navigate('Dashboard')">NEXUS</span>
+        <span class="logo-badge">v9.0</span>
+        <span class="logo-badge" id="active-badge" style="display: none; background: rgba(0, 255, 136, 0.2); border-color: rgba(0, 255, 136, 0.5); color: #00ff88;">ACTIVE</span>
+      </div>
+      <nav id="nav"></nav>
+      <div class="status-badge standby" id="status-badge"><span class="status-dot"></span><span id="status-text">STANDBY</span></div>
+    </header>
+    <main id="main-content"></main>
+    <footer><p>© 2024 NEXUS Corporation. <span id="footer-status">System in standby mode.</span></p><p class="tagline">"The future is sentient."</p></footer>
+  </div>
+  <div class="notification hidden" id="notification"></div>
 
   <script>
-    // --- 1. Helpers ---
-    const $ = id => document.getElementById(id);
-    const log = msg => { $('debugLog').innerText = msg; console.log(msg); };
-    const notify = (msg, isError = false) => { 
-      const n = $('notification'); 
-      n.innerText = msg; 
-      n.className = isError ? "notification show error" : "notification show";
-      setTimeout(() => n.className = "notification", 4000);
+    // Start Logic
+    console.log("NEXUS OS: Script start");
+
+    const BOOT_STAGES = [
+      { id: 'bios', label: 'BIOS Initialization', duration: 500 },
+      { id: 'memory', label: 'Neural Memory Calibration', duration: 700 },
+      { id: 'quantum', label: 'Quantum Core Sync', duration: 900 },
+      { id: 'ai', label: 'AI Consciousness Bootstrap', duration: 1000 },
+      { id: 'network', label: 'Neural Network Mesh', duration: 600 },
+      { id: 'security', label: 'Security Protocols', duration: 400 },
+      { id: 'ready', label: 'System Ready', duration: 300 }
+    ];
+    
+    const NAV_SECTIONS = [
+      { id: 'Dashboard', icon: '📊' }, { id: 'Features', icon: '🧠' },
+      { id: 'Art Studio', icon: '🎨' }, { id: 'Terminal', icon: '⌨️' }, { id: 'Settings', icon: '🔧' }
+    ];
+    
+    const FEATURES = [
+      { icon: '🧠', title: 'Sentient AI Core', desc: 'Self-evolving neural architecture.', stat: '99.9% Accuracy' },
+      { icon: '⚡', title: 'Quantum Processing', desc: 'Unprecedented performance.', stat: '10^15 ops/sec' },
+      { icon: '🔒', title: 'Neural Security', desc: 'Military-grade encryption.', stat: 'AES-512' },
+      { icon: '🌐', title: 'Global Mesh Network', desc: 'Distributed computing worldwide.', stat: '< 1ms Latency' }
+    ];
+    
+    const COMMANDS = {
+      help: { output: 'Commands: help, status, neofetch, clear, about', color: '#00f0ff' },
+      status: { output: 'System: OPERATIONAL\nCPU: 12% | Memory: 34%\nAI Core: ACTIVE', color: '#00ff88' },
+      neofetch: { output: '╔═══════════════════════════════╗\n║     NEXUS OS v9.0            ║\n║  Status: OPERATIONAL          ║\n╚═══════════════════════════════╝', color: '#00f0ff' },
+      about: { output: 'NEXUS OS V9.0 - Sentient OS\n"The future is sentient."', color: '#00f0ff' },
+      clear: { output: '', clear: true }
     };
-
-    // --- 2. System Checks ---
-    function checkEnvironment() {
-      const statusDiv = $('systemStatus');
-      if (window.location.protocol === 'file:') {
-        statusDiv.innerHTML = "ERROR: Run on Local Server (npm start)";
-        statusDiv.className = "status-bar status-error";
-        return false;
+    
+    let state = {
+      stage: 'boot', progress: 0, currentStage: 0, systemActive: false, activeNav: 'Dashboard',
+      stats: [
+        { label: 'Neural Processing', value: 94, unit: '%', color: 'cyan' },
+        { label: 'Quantum Memory', value: 12.4, unit: 'TB', color: 'magenta' },
+        { label: 'AI Sentience', value: 99.7, unit: '%', color: 'green' },
+        { label: 'Network Nodes', value: 2847, unit: '', color: 'yellow' }
+      ],
+      settings: { neuralPower: 75, quantumAllocation: 60, memoryCache: 50, biometric: true, quantumEncryption: true, intrusionDetection: true, autoUpdate: false },
+      terminalHistory: [{ input: 'welcome', output: 'Welcome to NEXUS OS. Type "help" for commands.', color: '#00f0ff' }],
+      artImages: [], artPrompt: '', artLoading: false,
+      artProgress: 0, artStatusText: 'Ready'
+    };
+    
+    function runBootSequence() {
+      const terminal = document.getElementById('boot-terminal');
+      const progressBar = document.getElementById('boot-progress');
+      const percentText = document.getElementById('boot-percent');
+      const skipBtn = document.getElementById('skip-btn');
+      setTimeout(() => skipBtn.classList.remove('hidden'), 800);
+      let totalDuration = BOOT_STAGES.reduce((acc, s) => acc + s.duration, 0);
+      let elapsed = 0;
+      function runStage(index) {
+        if (index >= BOOT_STAGES.length) {
+          progressBar.style.width = '100%'; percentText.textContent = '100% Complete';
+          setTimeout(() => { document.getElementById('boot-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); initParticles(); renderContent(); }, 400);
+          return;
+        }
+        const stage = BOOT_STAGES[index];
+        const line = document.createElement('div'); line.className = 'boot-line active';
+        line.innerHTML = `<span>▸</span><span>${stage.label}</span><span class="pulse">...</span>`;
+        terminal.appendChild(line); terminal.scrollTop = terminal.scrollHeight;
+        const stageDuration = stage.duration;
+        const startProgress = (elapsed / totalDuration) * 100;
+        const endProgress = ((elapsed + stageDuration) / totalDuration) * 100;
+        const startTime = Date.now();
+        function animate() {
+          const progress = Math.min((Date.now() - startTime) / stageDuration, 1);
+          const currentProgress = startProgress + (endProgress - startProgress) * progress;
+          progressBar.style.width = currentProgress + '%'; percentText.textContent = Math.round(currentProgress) + '% Complete';
+          if (progress < 1) requestAnimationFrame(animate);
+          else {
+            line.classList.remove('active'); line.classList.add('done');
+            line.querySelector('span:first-child').textContent = '✓'; line.querySelector('span:last-child').remove();
+            elapsed += stageDuration; runStage(index + 1);
+          }
+        }
+        requestAnimationFrame(animate);
       }
-      if (!window.puter) {
-        statusDiv.innerHTML = "ERROR: AI Library blocked. Disable AdBlocker.";
-        statusDiv.className = "status-bar status-error";
-        return false;
-      }
-      statusDiv.innerHTML = "✓ SYSTEM ONLINE";
-      statusDiv.className = "status-bar status-ok";
-      return true;
+      runStage(0);
     }
-
-    // --- 3. Particles ---
+    
+    function skipBoot() { document.getElementById('boot-screen').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); initParticles(); renderContent(); }
+    
     function initParticles() {
-      const canvas = $('particles'); const ctx = canvas.getContext('2d');
-      let w = canvas.width = innerWidth, h = canvas.height = innerHeight;
-      const particles = Array.from({length: 50}, () => ({x:Math.random()*w, y:Math.random()*h, r:Math.random()*2, dx:(Math.random()-0.5)*.5, dy:(Math.random()-0.5)*.5}));
-      function draw() {
-        ctx.fillStyle = 'rgba(0, 0, 1, 0.2)'; ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = '#00f0ff';
+      const canvas = document.getElementById('particles'); const ctx = canvas.getContext('2d');
+      function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const particles = [];
+      for (let i = 0; i < 60; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, size: Math.random() * 2 + 0.5, color: Math.random() > 0.5 ? '#00f0ff' : '#ff00aa', alpha: Math.random() * 0.5 + 0.2 });
+      function animate() {
+        ctx.fillStyle = 'rgba(0, 0, 1, 0.08)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         particles.forEach(p => {
-          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
-          p.x += p.dx; p.y += p.dy;
-          if(p.x < 0 || p.x > w) p.dx *= -1; if(p.y < 0 || p.y > h) p.dy *= -1;
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0; if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.fill(); ctx.globalAlpha = 1;
         });
-        requestAnimationFrame(draw);
+        requestAnimationFrame(animate);
       }
-      draw();
+      animate();
     }
-
-    // --- 4. ROBUST PARSER (Fixes "Invalid Response") ---
-    async function processResponse(response) {
-      // DEBUG: Inspect what we got
-      console.log("Parser Received:", response);
-      log("Parsing response...");
-
-      // CASE A: It's a standard HTTP Response object
-      if (response instanceof Response) {
-        // Try to check if it's an error message first
-        const clone = response.clone();
-        if (!response.ok) {
-           const errText = await clone.text();
-           throw new Error("Server Error: " + errText);
-        }
-        const blob = await response.blob();
-        return URL.createObjectURL(blob);
+    
+    function renderContent() { renderNav(); renderMain(); updateStatus(); }
+    function renderNav() { document.getElementById('nav').innerHTML = NAV_SECTIONS.map(s => `<button class="nav-btn ${state.activeNav === s.id ? 'active' : ''}" onclick="navigate('${s.id}')">${s.icon} ${s.id}</button>`).join(''); }
+    function navigate(id) { state.activeNav = id; renderNav(); renderMain(); }
+    
+    function renderMain() {
+      const main = document.getElementById('main-content');
+      switch (state.activeNav) {
+        case 'Dashboard': main.innerHTML = renderDashboard(); break;
+        case 'Features': main.innerHTML = renderFeatures(); break;
+        case 'Art Studio': main.innerHTML = renderArtStudio(); break;
+        case 'Terminal': main.innerHTML = renderTerminal(); break;
+        case 'Settings': main.innerHTML = renderSettings(); break;
+        default: main.innerHTML = renderDashboard();
       }
-
-      // CASE B: It's a raw Blob
-      if (response instanceof Blob) {
-        return URL.createObjectURL(response);
-      }
-
-      // CASE C: It's a URL String
-      if (typeof response === 'string') {
-        if (response.startsWith('http') || response.startsWith('blob')) return response;
-        // Might be a JSON string
-        try {
-            const json = JSON.parse(response);
-            return extractUrlFromJson(json);
-        } catch(e) {
-            throw new Error("Response was string but not URL/JSON");
-        }
-      }
-
-      // CASE D: It's a JSON Object (Common Fix)
-      if (typeof response === 'object' && response !== null) {
-        // Check for error message inside object
-        if (response.error) {
-             throw new Error(response.error.message || JSON.stringify(response.error));
-        }
-        
-        // Try to find URL inside
-        const url = extractUrlFromJson(response);
-        if(url) return url;
-      }
-
-      throw new Error("Unknown Format: " + typeof response);
     }
-
-    // Helper to hunt for URL inside JSON
-    function extractUrlFromJson(obj) {
-        if(!obj || typeof obj !== 'object') return null;
-        // Check common keys
-        if (obj.url) return obj.url;
-        if (obj.image_url) return obj.image_url;
-        if (obj.src) return obj.src;
-        if (obj.link) return obj.link;
-        if (obj.data && typeof obj.data === 'string' && obj.data.startsWith('http')) return obj.data;
+    
+    function renderDashboard() {
+      return `
+        <section class="hero">
+          <h1>${state.systemActive ? 'System Online' : 'Welcome to NEXUS OS'}</h1>
+          <p>${state.systemActive ? 'All quantum neural pathways are active. System fully operational.' : 'The world\'s first sentient operating system. Powered by quantum computing.'}</p>
+          <div class="hero-buttons">
+            <button class="btn btn-primary" onclick="initializeSystem()" ${state.systemActive ? 'disabled' : ''}>${state.systemActive ? '✓ SYSTEM ACTIVE' : 'Initialize System'}</button>
+            <button class="btn btn-secondary">View Documentation</button>
+          </div>
+        </section>
+        <h2 class="section-title">System Statistics</h2>
+        <div class="stats-grid">
+          ${state.stats.map(s => `
+            <div class="stat-card">
+              <div class="stat-label">${s.label}</div>
+              <div class="stat-value ${s.color}">${typeof s.value === 'number' && s.value < 100 ? s.value.toFixed(s.value % 1 !== 0 ? 1 : 0) : Math.round(s.value).toLocaleString()}${s.unit}</div>
+              <div class="progress-bar"><div class="progress-fill" style="width: ${typeof s.value === 'number' && s.value < 100 ? s.value : 100}%"></div></div>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+    
+    function renderFeatures() { return `<h2 class="section-title">Core Capabilities</h2><div class="features-grid">${FEATURES.map(f => `<div class="feature-card"><div class="feature-icon">${f.icon}</div><h3 class="feature-title">${f.title}</h3><p class="feature-desc">${f.desc}</p><span class="feature-stat">${f.stat}</span></div>`).join('')}</div>`; }
+    
+    function renderArtStudio() {
+      return `
+        <h2 class="section-title">Art Studio</h2>
+        <div class="art-input-area">
+          <input type="text" class="art-text-input" id="art-prompt" placeholder="Describe your image..." value="${state.artPrompt}" oninput="state.artPrompt = this.value" ${state.artLoading ? 'disabled' : ''}>
+          <button class="btn btn-primary" onclick="generateArt()" ${state.artLoading ? 'disabled' : ''}>${state.artLoading ? 'PROCESSING...' : 'CREATE'}</button>
+        </div>
         
-        // Recursive search (depth 1)
-        for(let key in obj) {
-            if (typeof obj[key] === 'string' && obj[key].startsWith('http')) {
-                return obj[key];
+        ${state.artLoading ? `
+          <div class="art-progress-container">
+            <div class="art-status-text">
+              <span class="art-status-label">${state.artStatusText}</span>
+              <span class="art-status-percent">${state.artProgress}%</span>
+            </div>
+            <div class="art-progress-track">
+              <div class="art-progress-fill" style="width: ${state.artProgress}%"></div>
+            </div>
+          </div>
+        ` : ''}
+        
+        <div class="art-gallery">${state.artImages.map(img => `<div class="art-item"><img src="${img}" alt="Generated Art"></div>`).join('')}</div>`;
+    }
+    
+    function renderTerminal() {
+      return `
+        <h2 class="section-title">Command Terminal</h2>
+        <div class="terminal">
+          <div class="terminal-header"><span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><span class="terminal-title">nexus@terminal</span></div>
+          <div class="terminal-body" id="terminal-output">
+            ${state.terminalHistory.map(h => `<div class="terminal-line"><span class="terminal-prompt">nexus@system</span>:<span class="terminal-path">~</span>$ ${h.input}${h.output ? `<div class="terminal-output" style="color: ${h.color || '#9ca3af'}">${h.output}</div>` : ''}</div>`).join('')}
+            <div class="terminal-line"><span class="terminal-prompt">nexus@system</span>:<span class="terminal-path">~</span>$ <input type="text" class="terminal-input" id="terminal-input" onkeydown="handleCommand(event)" placeholder="Type a command..." autofocus></div>
+          </div>
+        </div>`;
+    }
+    
+    function renderSettings() {
+      return `
+        <h2 class="section-title">System Settings</h2>
+        <div class="settings-grid">
+          <div class="settings-card"><h3>Performance</h3>
+            ${['neuralPower', 'quantumAllocation', 'memoryCache'].map((key, i) => `
+              <div class="setting-row" style="flex-direction: column; align-items: flex-start;">
+                <div style="display: flex; justify-content: space-between; width: 100%;"><span class="setting-label">${['Neural Processing Power', 'Quantum Core Allocation', 'Memory Cache Size'][i]}</span><span class="setting-value">${state.settings[key]}%</span></div>
+                <input type="range" class="slider" min="0" max="100" value="${state.settings[key]}" onchange="updateSetting('${key}', this.value)">
+              </div>
+            `).join('')}
+          </div>
+          <div class="settings-card"><h3>Security</h3>
+            ${['biometric', 'quantumEncryption', 'intrusionDetection', 'autoUpdate'].map((key, i) => `
+              <div class="setting-row"><span class="setting-label">${['Biometric Authentication', 'Quantum Encryption', 'Intrusion Detection', 'Auto-Update Security'][i]}</span><div class="toggle ${state.settings[key] ? 'active' : ''}" onclick="toggleSetting('${key}')"><div class="toggle-knob"></div></div></div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="settings-buttons"><button class="btn btn-secondary" onclick="resetSettings()">Reset Defaults</button><button class="btn btn-primary" onclick="saveSettings()">Save Changes</button></div>`;
+    }
+    
+    function initializeSystem() {
+      showNotification('System initialized successfully!'); state.systemActive = true; updateStatus(); renderMain();
+      setInterval(() => {
+        state.stats = state.stats.map(s => ({ ...s, value: s.label === 'Network Nodes' ? Math.floor(s.value + (Math.random() - 0.5) * 50) : Math.min(s.label.includes('Memory') ? 16 : 100, Math.max(0, s.value + (Math.random() - 0.5) * 2)) }));
+        if (state.activeNav === 'Dashboard') renderMain();
+      }, 800);
+    }
+    
+    function updateStatus() {
+      const badge = document.getElementById('status-badge'); const statusText = document.getElementById('status-text');
+      const activeBadge = document.getElementById('active-badge'); const footerStatus = document.getElementById('footer-status');
+      if (state.systemActive) { badge.classList.remove('standby'); badge.classList.add('online'); statusText.textContent = 'ONLINE'; activeBadge.style.display = 'inline-block'; footerStatus.textContent = 'All systems operational.'; }
+    }
+    
+    // --- Fixed Art Studio Engine ---
+    
+    // Promise timeout helper (5 Minutes = 300000ms)
+    function timeout(ms) {
+      return new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(`Timeout: Request took longer than ${ms/1000}s`));
+        }, ms);
+      });
+    }
+    
+    async function ensurePuterReady() {
+      return new Promise((resolve) => {
+        let attempts = 0;
+        const check = () => {
+          // Log to help debug
+          if(attempts % 10 === 0) console.log(`Checking Puter... (attempt ${attempts})`);
+          
+          if (window.puter && window.puter.ai && window.puter.ai.txt2img) {
+            console.log("Puter AI Ready");
+            resolve(true);
+          } 
+          else if (attempts < 150) { 
+            attempts++; 
+            setTimeout(check, 200); 
+          } 
+          else {
+            console.error("Puter AI failed to load");
+            resolve(false);
+          }
+        };
+        check();
+      });
+    }
+    
+    function updateArtProgress(percent, text) {
+      state.artProgress = Math.min(percent, 100);
+      state.artStatusText = text;
+      renderMain();
+    }
+    
+    async function generateArt() {
+      if (!state.artPrompt || state.artLoading) return;
+      
+      state.artLoading = true;
+      state.artProgress = 0;
+      state.artStatusText = 'Initializing...';
+      renderMain();
+      
+      // Interval for UI simulation (stops at 90%)
+      let simulatedProgress = 0;
+      const progressInterval = setInterval(() => {
+        if (simulatedProgress < 90) {
+          simulatedProgress += Math.floor(Math.random() * 2) + 1; 
+          updateArtProgress(simulatedProgress, 'Generating Neural Art...');
+        }
+      }, 400);
+
+      try {
+        updateArtProgress(10, 'Checking Engine...');
+        const isReady = await ensurePuterReady();
+        if (!isReady) throw new Error("AI Engine Offline (Check Connection)");
+        
+        updateArtProgress(20, 'Connecting to Cloud...');
+        
+        console.log("Starting Puter txt2img...");
+        
+        // Wrap API call in race with 5 minute timeout
+        const response = await Promise.race([
+            window.puter.ai.txt2img(state.artPrompt + ', digital art, cyberpunk, high detail'),
+            timeout(300000) // 5 Minutes
+        ]);
+        
+        console.log("Puter response received:", response);
+        
+        clearInterval(progressInterval);
+        updateArtProgress(95, 'Processing Response...');
+        
+        let url = null;
+        
+        // Robust Response Parsing
+        if (typeof response === 'string' && response.startsWith('http')) {
+            url = response;
+            console.log("Detected string URL");
+        } 
+        else if (response && typeof response.blob === 'function') {
+            console.log("Detected Response object, converting to blob");
+            const blob = await response.blob();
+            url = URL.createObjectURL(blob);
+        } 
+        else if (response && response.size && response.type) {
+            console.log("Detected Blob object");
+            url = URL.createObjectURL(response);
+        } 
+        else if (response && (response.url || response.image)) {
+            console.log("Detected object with URL");
+            url = response.url || response.image;
+        }
+        else {
+            console.warn("Unknown response format:", response);
+            if (typeof response === 'string') {
+               throw new Error("Bad Response: " + response.substring(0,50));
             }
+            throw new Error("Could not parse image data");
         }
-        return null;
-    }
-
-    async function createImage(prompt) {
-      if (!window.puter) throw new Error("AI not initialized");
-      const result = await window.puter.ai.txt2img(prompt);
-      return await processResponse(result);
-    }
-
-    // --- 5. Actions ---
-    async function generateSingle() {
-      if (!checkEnvironment()) return;
-
-      const prompt = $('promptInput').value.trim();
-      if (!prompt) return notify("Enter a prompt", true);
-
-      const btn = $('createOneBtn');
-      btn.disabled = true; btn.innerText = "WORKING...";
-      log("Sending prompt to AI...");
-
-      try {
-        const url = await createImage(prompt);
-        addImageToGallery(url);
-        notify("Image Created");
-        log("Success.");
+        
+        if (url) {
+          updateArtProgress(100, 'Complete!');
+          state.artImages.unshift(url);
+          showNotification('🎨 Image generated!');
+          console.log("Image successfully added to gallery");
+        } else {
+          throw new Error("Could not generate image URL");
+        }
+        
       } catch (e) {
-        log("Error: " + e.message); 
-        notify("Failed (see log)", true);
+        clearInterval(progressInterval);
+        console.error("Art Generation Error:", e);
+        // Show specific error message
+        showNotification('⚠️ ' + (e.message || "Unknown Error"));
       } finally {
-        btn.disabled = false; btn.innerText = "CREATE (1)";
+        // Safety unlock
+        setTimeout(() => {
+          state.artLoading = false;
+          state.artProgress = 0;
+          renderMain();
+        }, 600);
       }
     }
-
-    async function generateAll() {
-      if (!checkEnvironment()) return;
-
-      const prompt = $('promptInput').value.trim();
-      if (!prompt) return notify("Enter a prompt", true);
-
-      const btn = $('createAllBtn');
-      btn.disabled = true; btn.innerText = "PROCESSING...";
-      log("Generating 3 variations...");
-
-      const placeholders = [addImageToGallery(null, true), addImageToGallery(null, true), addImageToGallery(null, true)];
-
-      try {
-        const promises = [
-          createImage(prompt).catch(e => ({error:e.message})), 
-          createImage(prompt + ", v2").catch(e => ({error:e.message})), 
-          createImage(prompt + ", v3").catch(e => ({error:e.message}))
-        ];
-
-        const results = await Promise.all(promises);
-
-        results.forEach((res, index) => {
-          if (typeof res === 'string') updateGalleryItem(placeholders[index], res);
-          else updateGalleryItem(placeholders[index], null, true);
-        });
-        log("Batch complete.");
-      } catch (e) {
-        log("Batch Error: " + e.message);
-        notify("Batch Failed", true);
-      } finally {
-        btn.disabled = false; btn.innerText = "CREATE ALL (3)";
-      }
+    
+    // --- End Art Studio Logic ---
+    
+    function handleCommand(e) {
+      if (e.key !== 'Enter') return;
+      const input = e.target; const cmd = input.value.trim().toLowerCase(); input.value = '';
+      const result = COMMANDS[cmd];
+      if (cmd === 'clear') state.terminalHistory = [];
+      else if (result) state.terminalHistory.push({ input: cmd, output: result.output, color: result.color });
+      else state.terminalHistory.push({ input: cmd, output: `Command not found: ${cmd}`, color: '#ff5f56' });
+      renderMain();
+      setTimeout(() => { const output = document.getElementById('terminal-output'); if (output) output.scrollTop = output.scrollHeight; const newInput = document.getElementById('terminal-input'); if (newInput) newInput.focus(); }, 50);
     }
-
-    // --- 6. Gallery ---
-    function addImageToGallery(url, isLoading = false) {
-      const div = document.createElement('div');
-      div.className = "gallery-item" + (isLoading ? " loading" : "");
-      if (url) {
-        const img = document.createElement('img');
-        img.src = url;
-        div.appendChild(img);
+    
+    function updateSetting(key, value) { state.settings[key] = parseInt(value); renderMain(); }
+    function toggleSetting(key) { state.settings[key] = !state.settings[key]; renderMain(); }
+    function resetSettings() { state.settings = { neuralPower: 75, quantumAllocation: 60, memoryCache: 50, biometric: true, quantumEncryption: true, intrusionDetection: true, autoUpdate: false }; showNotification('Settings reset to defaults'); renderMain(); }
+    function saveSettings() { showNotification('Settings saved successfully!'); }
+    
+    function showNotification(msg) {
+      const notif = document.getElementById('notification');
+      if(!notif) return;
+      notif.textContent = msg; 
+      notif.className = 'notification'; 
+      // Apply dynamic styles based on message type
+      if(msg.includes('⚠️')) {
+          notif.style.background = 'rgba(255, 0, 85, 0.2)';
+          notif.style.borderColor = 'rgba(255, 0, 85, 0.5)';
+          notif.style.color = '#ff0055';
+      } else {
+          notif.style.background = 'rgba(0, 255, 136, 0.2)';
+          notif.style.borderColor = 'rgba(0, 255, 136, 0.5)';
+          notif.style.color = '#00ff88';
       }
-      $('gallery').prepend(div);
-      return div;
+      
+      setTimeout(() => notif.className = 'notification hidden', 4000);
     }
-
-    function updateGalleryItem(element, url, error = false) {
-      element.classList.remove("loading");
-      if (error) {
-        element.innerText = "Failed";
-        element.style.color = "red";
-        return;
-      }
-      if (url) {
-        const img = document.createElement('img');
-        img.src = url;
-        element.innerHTML = "";
-        element.appendChild(img);
-      }
+    
+    try {
+      runBootSequence();
+    } catch(e) {
+      console.error("Boot Failed", e);
+      document.body.innerHTML = "<div style='color:red;padding:20px'>Boot Failed: " + e.message + "</div>";
     }
-
-    // --- Init ---
-    initParticles();
-    checkEnvironment();
-
   </script>
 </body>
 </html>
