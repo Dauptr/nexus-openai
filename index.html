@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NEXUS OS V9.0 [SENTIENT] | Unlimited Edition</title>
+  <meta name="description" content="NEXUS OS V9.0 - A sentient cyberpunk operating system.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- PUTER SDK: Powers the Unlimited AI Features -->
+  <script src="https://js.puter.com/v2/"></script>
+  
+  <style>
+    :root {
+      --bg-primary: #000001; --bg-secondary: #020208; --bg-tertiary: #040410;
+      --neon-cyan: #00f0ff; --neon-magenta: #ff00aa; --neon-violet: #8b00ff;
+      --neon-green: #00ff88; --neon-gold: #ffcc00; --neon-red: #ff0055;
+      --glass-dark: rgba(0, 2, 8, 0.92); --border-medium: rgba(0, 240, 255, 0.15);
+      --text-bright: #ffffff; --text-normal: #c0c8d8; --text-dim: #607090;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Rajdhani', sans-serif; background: var(--bg-primary); color: var(--text-normal); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
+
+    @keyframes pulse-glow { 0%, 100% { opacity: 0.5; filter: blur(20px); } 50% { opacity: 1; filter: blur(30px); } }
+    @keyframes scan-line { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+    @keyframes glitch { 0%, 90%, 100% { transform: translate(0); filter: none; } 92% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); } 94% { transform: translate(2px, -1px); filter: hue-rotate(-90deg); } }
+    @keyframes window-open { from { opacity: 0; transform: scale(0.8) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes boot-sequence { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+    @keyframes breathe { 0%, 100% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.3); } 50% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.5); } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+    .desktop { position: relative; width: 100%; height: 100%; background: var(--bg-primary); overflow: hidden; }
+    #neural-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+    .ambient-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+    .glow-orb { position: absolute; border-radius: 50%; filter: blur(80px); animation: pulse-glow 4s ease-in-out infinite; }
+    .glow-orb.cyan { background: var(--neon-cyan); width: 400px; height: 400px; top: -100px; right: -100px; }
+    .glow-orb.magenta { background: var(--neon-magenta); width: 300px; height: 300px; bottom: -50px; left: -50px; animation-delay: 1s; }
+    .glow-orb.violet { background: var(--neon-violet); width: 350px; height: 350px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 2s; }
+    .scan-line { position: absolute; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent); animation: scan-line 8s linear infinite; opacity: 0.3; z-index: 2; }
+    .grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; z-index: 2; }
+
+    .icons-grid { position: absolute; top: 20px; left: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; z-index: 10; }
+    .desktop-icon { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 80px; padding: 10px 5px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent; position: relative; }
+    .desktop-icon:hover { background: rgba(0, 240, 255, 0.1); border-color: rgba(0, 240, 255, 0.15); transform: scale(1.05); }
+    .desktop-icon svg { width: 40px; height: 40px; margin-bottom: 5px; }
+    .desktop-icon span { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text-bright); text-align: center; }
+    .desktop-icon.premium::after { content: 'PRO'; position: absolute; top: 5px; right: 5px; font-size: 8px; font-family: 'Orbitron', sans-serif; color: var(--neon-gold); background: rgba(255, 204, 0, 0.2); padding: 2px 4px; border-radius: 3px; }
+
+    .taskbar { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 5px; padding: 8px 15px; background: rgba(0, 2, 8, 0.92); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 16px; backdrop-filter: blur(20px); z-index: 1000; animation: breathe 3s ease-in-out infinite; }
+    .taskbar-item { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; background: transparent; border: 1px solid transparent; }
+    .taskbar-item:hover { background: rgba(0, 240, 255, 0.15); border-color: var(--neon-cyan); transform: translateY(-5px); }
+    .taskbar-item.active { background: rgba(0, 240, 255, 0.2); border-color: var(--neon-cyan); }
+    .taskbar-item svg { width: 22px; height: 22px; }
+    .taskbar-divider { width: 1px; height: 30px; background: rgba(0, 240, 255, 0.15); margin: 0 5px; }
+    .system-tray { display: flex; align-items: center; gap: 15px; padding-left: 10px; }
+    .tray-item { display: flex; align-items: center; gap: 5px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-normal); }
+    .tray-item .value { color: var(--neon-cyan); font-weight: 600; }
+
+    /* Windows */
+    .window { position: absolute; min-width: 400px; min-height: 300px; background: rgba(0, 2, 8, 0.95); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 12px; backdrop-filter: blur(20px); overflow: hidden; z-index: 100; animation: window-open 0.3s ease-out; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 240, 255, 0.1); }
+    .window.minimized { display: none !important; }
+    .window.focused { z-index: 200; border-color: var(--neon-cyan); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 240, 255, 0.2); }
+    .window-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: rgba(0, 240, 255, 0.05); border-bottom: 1px solid rgba(0, 240, 255, 0.08); cursor: move; user-select: none; }
+    .window-title { display: flex; align-items: center; gap: 10px; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 600; color: var(--text-bright); text-transform: uppercase; letter-spacing: 1px; }
+    .window-title svg { width: 16px; height: 16px; }
+    .window-controls { display: flex; gap: 8px; }
+    .window-btn { width: 14px; height: 14px; border-radius: 50%; border: none; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+    .window-btn.close { background: var(--neon-red); }
+    .window-btn.minimize { background: var(--neon-gold); }
+    .window-btn.maximize { background: var(--neon-green); }
+    .window-btn:hover { transform: scale(1.2); filter: brightness(1.3); }
+    .window-btn svg { width: 8px; height: 8px; stroke: rgba(0,0,0,0.5); stroke-width: 2; }
+    .window-content { height: calc(100% - 40px); overflow: auto; position: relative; }
+    .window-resize { position: absolute; right: 0; bottom: 0; width: 15px; height: 15px; cursor: nwse-resize; }
+
+    /* Components */
+    .cyber-input { background: rgba(0,0,0,0.6); border: 1px solid rgba(0, 240, 255, 0.2); border-bottom: 2px solid var(--neon-cyan); color: #fff; padding: 12px; width: 100%; font-family: inherit; outline: none; font-size: 13px; transition: 0.3s; border-radius: 4px; }
+    .cyber-input:focus { background: rgba(0, 243, 255, 0.05); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2); border-color: var(--neon-cyan); }
+    .cyber-btn { background: rgba(0,0,0,0.5); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; transition: 0.2s; border-radius: 4px; }
+    .cyber-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
+    .cyber-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+    .cyber-btn.danger { color: var(--neon-red); border-color: var(--neon-red); }
+    .cyber-btn.danger:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 20px var(--neon-red); }
+    .cyber-btn.success { color: var(--neon-green); border-color: var(--neon-green); }
+    .cyber-btn.success:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px var(--neon-green); }
+
+    /* Progress Bar */
+    .progress-container { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 4px; padding: 10px; margin: 8px 0; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: var(--text-normal); }
+    .progress-bar { height: 6px; background: rgba(0, 0, 0, 0.5); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-violet)); border-radius: 3px; transition: width 0.3s ease; }
+    .progress-status { font-size: 10px; color: var(--text-dim); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+    /* Chat */
+    .ai-chat-content { display: flex; flex-direction: column; height: 100%; }
+    .chat-header { padding: 12px 15px; background: rgba(0, 240, 255, 0.03); border-bottom: 1px solid rgba(0, 240, 255, 0.08); }
+    .model-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+    .model-btn { padding: 6px 12px; background: transparent; border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 6px; color: var(--text-normal); font-family: 'JetBrains Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.2s ease; }
+    .model-btn:hover { background: rgba(0, 240, 255, 0.1); }
+    .model-btn.active { background: var(--neon-cyan); color: var(--bg-primary); border-color: var(--neon-cyan); }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+    .chat-message { display: flex; gap: 10px; max-width: 90%; animation: fade-in 0.3s ease; }
+    .chat-message.user { align-self: flex-end; flex-direction: row-reverse; }
+    .chat-message.ai { align-self: flex-start; }
+    .chat-message.system { align-self: center; max-width: 100%; }
+    .chat-avatar { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; font-family: 'Orbitron', sans-serif; font-weight: 700; }
+    .chat-message.user .chat-avatar { background: var(--neon-cyan); color: var(--bg-primary); }
+    .chat-message.ai .chat-avatar { background: var(--neon-violet); color: var(--text-bright); }
+    .chat-message.system .chat-avatar { background: var(--neon-gold); color: var(--bg-primary); }
+    .chat-bubble { padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
+    .chat-message.user .chat-bubble { background: rgba(0, 240, 255, 0.15); color: var(--text-bright); }
+    .chat-message.ai .chat-bubble { background: rgba(139, 0, 255, 0.15); color: var(--text-bright); }
+    .chat-message.system .chat-bubble { background: rgba(255, 204, 0, 0.15); color: var(--text-bright); font-size: 11px; }
+    .chat-input-area { display: flex; gap: 10px; padding: 12px 15px; background: rgba(0, 240, 255, 0.02); border-top: 1px solid rgba(0, 240, 255, 0.08); }
+    .chat-input { flex: 1; background: var(--bg-tertiary); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 8px; padding: 10px 14px; color: var(--text-bright); font-family: 'Rajdhani', sans-serif; font-size: 14px; outline: none; resize: none; }
+    .chat-input:focus { border-color: var(--neon-cyan); }
+    .chat-send-btn { padding: 10px 18px; background: var(--neon-cyan); border: none; border-radius: 8px; color: var(--bg-primary); font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+    .chat-send-btn:hover { filter: brightness(1.1); }
+    .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; background: rgba(139, 0, 255, 0.15); border-radius: 12px; }
+    .typing-indicator span { width: 6px; height: 6px; background: var(--neon-violet); border-radius: 50%; animation: pulse-glow 1.4s infinite ease-in-out; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Radio */
+    .radio-content { display: flex; flex-direction: column; height: 100%; }
+    .radio-header { padding: 15px; background: rgba(0, 240, 255, 0.03); border-bottom: 1px solid rgba(0, 240, 255, 0.08); }
+    .radio-search { display: flex; gap: 8px; }
+    .radio-search-input { flex: 1; background: var(--bg-tertiary); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 6px; padding: 8px 12px; color: var(--text-bright); font-size: 13px; outline: none; }
+    .radio-search-input:focus { border-color: var(--neon-cyan); }
+    .radio-search-btn { padding: 8px 14px; background: var(--neon-cyan); border: none; border-radius: 6px; color: var(--bg-primary); font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 600; cursor: pointer; }
+    .radio-now-playing { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(0, 240, 255, 0.02); border-bottom: 1px solid rgba(0, 240, 255, 0.08); }
+    .radio-art { width: 70px; height: 70px; background: linear-gradient(135deg, var(--neon-violet), var(--neon-magenta)); border-radius: 10px; display: flex; align-items: center; justify-content: center; animation: float 3s ease-in-out infinite; overflow: hidden; }
+    .radio-art img { width: 100%; height: 100%; object-fit: cover; }
+    .radio-art svg { width: 28px; height: 28px; stroke: var(--text-bright); }
+    .radio-art.playing svg { animation: pulse-glow 1s ease-in-out infinite; }
+    .radio-info { flex: 1; min-width: 0; }
+    .radio-station-name { font-family: 'Orbitron', sans-serif; font-size: 14px; color: var(--text-bright); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .radio-station-genre { font-size: 11px; color: var(--neon-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .radio-controls { display: flex; gap: 8px; align-items: center; }
+    .radio-btn { width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+    .radio-btn.play { background: var(--neon-cyan); color: var(--bg-primary); width: 44px; height: 44px; }
+    .radio-btn.play:hover { transform: scale(1.1); }
+    .radio-btn.vol { background: var(--bg-tertiary); color: var(--text-bright); border: 1px solid rgba(0, 240, 255, 0.15); font-family: 'Orbitron', sans-serif; font-size: 14px; }
+    .radio-btn.vol:hover { background: rgba(0, 240, 255, 0.1); }
+    .radio-stations { flex: 1; overflow-y: auto; padding: 12px; }
+    .station-card { display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(0, 240, 255, 0.02); border: 1px solid rgba(0, 240, 255, 0.08); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; }
+    .station-card:hover { background: rgba(0, 240, 255, 0.08); border-color: rgba(0, 240, 255, 0.15); transform: translateX(4px); }
+    .station-card.playing { border-color: var(--neon-cyan); background: rgba(0, 240, 255, 0.1); border-left: 3px solid var(--neon-cyan); }
+    .station-flag { font-size: 22px; }
+    .station-info { flex: 1; min-width: 0; }
+    .station-name { font-size: 13px; color: var(--text-bright); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .station-country { font-size: 10px; color: var(--text-dim); }
+    .station-plays { font-size: 9px; color: var(--neon-cyan); }
+    .no-results { text-align: center; padding: 30px; color: var(--text-dim); font-size: 13px; }
+
+    /* Terminal */
+    .terminal-content { display: flex; flex-direction: column; height: 100%; background: #000; font-family: 'JetBrains Mono', monospace; }
+    .terminal-output { flex: 1; overflow-y: auto; padding: 12px; font-size: 12px; line-height: 1.6; }
+    .terminal-line { margin-bottom: 4px; }
+    .terminal-line.command { color: var(--neon-cyan); }
+    .terminal-line.output { color: var(--text-normal); }
+    .terminal-line.error { color: var(--neon-red); }
+    .terminal-line.success { color: var(--neon-green); }
+    .terminal-line.info { color: var(--neon-gold); }
+    .terminal-input-line { display: flex; align-items: center; padding: 8px 12px; background: rgba(0, 240, 255, 0.03); border-top: 1px solid rgba(0, 240, 255, 0.08); }
+    .terminal-prompt { color: var(--neon-green); margin-right: 8px; white-space: nowrap; }
+    .terminal-input { flex: 1; background: transparent; border: none; color: var(--text-bright); font-family: inherit; font-size: 12px; outline: none; }
+    .terminal-cursor { display: inline-block; width: 8px; height: 14px; background: var(--neon-cyan); animation: blink 1s infinite; }
+
+    /* Dev Lab / IDE */
+    .ide-content { display: flex; flex-direction: column; height: 100%; }
+    .ide-toolbar { display: flex; gap: 8px; padding: 8px 12px; background: rgba(0, 240, 255, 0.03); border-bottom: 1px solid rgba(0, 240, 255, 0.08); align-items: center; flex-wrap: wrap; }
+    .ide-tabs { display: flex; flex: 1; gap: 4px; }
+    .ide-tab { padding: 6px 12px; background: transparent; border: 1px solid rgba(0, 240, 255, 0.1); border-radius: 4px 4px 0 0; color: var(--text-dim); font-size: 11px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px; }
+    .ide-tab:hover { background: rgba(0, 240, 255, 0.05); color: var(--text-normal); }
+    .ide-tab.active { background: rgba(0, 240, 255, 0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); }
+    .ide-tab .close { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0.5; }
+    .ide-tab .close:hover { opacity: 1; background: rgba(255, 0, 85, 0.3); }
+    .ide-main { display: flex; flex: 1; overflow: hidden; }
+    .ide-editor { flex: 1; display: flex; flex-direction: column; border-right: 1px solid rgba(0, 240, 255, 0.08); }
+    .ide-editor textarea { flex: 1; background: var(--bg-tertiary); border: none; outline: none; color: var(--text-bright); font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; padding: 12px; resize: none; }
+    .ide-preview { flex: 1; background: #fff; }
+    .ide-preview iframe { width: 100%; height: 100%; border: none; }
+    .ide-console { height: 120px; background: #000; border-top: 1px solid rgba(0, 240, 255, 0.08); overflow-y: auto; padding: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .ide-console-line { margin-bottom: 2px; }
+    .ide-console-line.log { color: var(--text-normal); }
+    .ide-console-line.error { color: var(--neon-red); }
+    .ide-console-line.warn { color: var(--neon-gold); }
+
+    /* Game Builder */
+    .game-content { display: flex; flex-direction: column; height: 100%; }
+    .game-toolbar { display: flex; gap: 8px; padding: 8px 12px; background: rgba(0, 240, 255, 0.03); border-bottom: 1px solid rgba(0, 240, 255, 0.08); flex-wrap: wrap; align-items: center; }
+    .game-main { display: flex; flex: 1; overflow: hidden; }
+    .game-canvas-container { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; padding: 10px; }
+    .game-canvas { border: 2px solid var(--neon-cyan); border-radius: 8px; background: #000; max-width: 100%; max-height: 100%; }
+    .game-sidebar { width: 280px; background: rgba(0, 240, 255, 0.02); border-left: 1px solid rgba(0, 240, 255, 0.08); display: flex; flex-direction: column; }
+    .game-sidebar-header { padding: 12px; border-bottom: 1px solid rgba(0, 240, 255, 0.08); font-family: 'Orbitron', sans-serif; font-size: 11px; color: var(--neon-cyan); }
+    .game-templates { padding: 10px; overflow-y: auto; flex: 1; }
+    .game-template { padding: 10px; background: rgba(0, 240, 255, 0.03); border: 1px solid rgba(0, 240, 255, 0.1); border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; }
+    .game-template:hover { background: rgba(0, 240, 255, 0.08); border-color: var(--neon-cyan); transform: translateX(4px); }
+    .game-template-name { font-size: 12px; color: var(--text-bright); margin-bottom: 3px; }
+    .game-template-desc { font-size: 10px; color: var(--text-dim); }
+
+    /* GitHub Console */
+    .github-content { display: flex; flex-direction: column; height: 100%; }
+    .github-header { padding: 12px 15px; background: rgba(0, 240, 255, 0.03); border-bottom: 1px solid rgba(0, 240, 255, 0.08); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .github-status { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+    .github-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--neon-green); }
+    .github-status-dot.disconnected { background: var(--neon-red); }
+    .github-main { display: flex; flex: 1; overflow: hidden; }
+    .github-sidebar { width: 220px; background: rgba(0, 240, 255, 0.02); border-right: 1px solid rgba(0, 240, 255, 0.08); padding: 10px; }
+    .github-repo-item { padding: 8px 10px; background: rgba(0, 240, 255, 0.02); border: 1px solid rgba(0, 240, 255, 0.08); border-radius: 6px; margin-bottom: 6px; cursor: pointer; font-size: 11px; color: var(--text-normal); transition: all 0.2s ease; }
+    .github-repo-item:hover { background: rgba(0, 240, 255, 0.08); color: var(--text-bright); }
+    .github-repo-item.active { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+    .github-output { flex: 1; display: flex; flex-direction: column; }
+    .github-terminal { flex: 1; background: #000; padding: 12px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .github-terminal-line { margin-bottom: 4px; line-height: 1.5; }
+    .github-terminal-line.cmd { color: var(--neon-cyan); }
+    .github-terminal-line.stdout { color: var(--text-normal); }
+    .github-terminal-line.stderr { color: var(--neon-red); }
+    .github-terminal-line.success { color: var(--neon-green); }
+    .github-actions { padding: 10px; background: rgba(0, 240, 255, 0.02); border-top: 1px solid rgba(0, 240, 255, 0.08); display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Settings */
+    .settings-content { padding: 15px; }
+    .settings-section { background: rgba(0, 240, 255, 0.02); border: 1px solid rgba(0, 240, 255, 0.08); border-radius: 8px; padding: 15px; margin-bottom: 12px; }
+    .settings-section-title { font-family: 'Orbitron', sans-serif; font-size: 11px; color: var(--neon-cyan); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .settings-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .settings-label { font-size: 12px; color: var(--text-normal); }
+    .settings-select { background: var(--bg-tertiary); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 4px; padding: 8px 12px; color: var(--text-bright); font-size: 12px; outline: none; min-width: 150px; }
+    .settings-select:focus { border-color: var(--neon-cyan); }
+    .settings-input { background: var(--bg-tertiary); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 4px; padding: 8px 12px; color: var(--text-bright); font-size: 12px; outline: none; flex: 1; max-width: 200px; }
+    .settings-input:focus { border-color: var(--neon-cyan); }
+
+    /* Admin Panel */
+    .admin-content { padding: 15px; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .admin-title { font-family: 'Orbitron', sans-serif; font-size: 13px; color: var(--text-bright); }
+    .admin-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+    .admin-stat { background: rgba(0, 240, 255, 0.03); border: 1px solid rgba(0, 240, 255, 0.08); border-radius: 8px; padding: 10px; text-align: center; }
+    .admin-stat-value { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700; color: var(--neon-cyan); }
+    .admin-stat-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
+    .admin-users-table { width: 100%; border-collapse: collapse; }
+    .admin-users-table th, .admin-users-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid rgba(0, 240, 255, 0.08); }
+    .admin-users-table th { font-family: 'Orbitron', sans-serif; font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+    .admin-users-table td { font-size: 11px; color: var(--text-normal); }
+    .admin-badge { padding: 3px 6px; border-radius: 4px; font-size: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .admin-badge.premium { background: rgba(255, 204, 0, 0.2); color: var(--neon-gold); }
+    .admin-badge.guest { background: rgba(0, 240, 255, 0.1); color: var(--neon-cyan); }
+    .admin-action-btn { padding: 4px 8px; background: transparent; border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 4px; color: var(--text-normal); font-size: 9px; cursor: pointer; transition: all 0.2s ease; font-family: 'JetBrains Mono', monospace; }
+    .admin-action-btn:hover { background: rgba(0, 240, 255, 0.1); color: var(--text-bright); }
+    .admin-action-btn.grant { border-color: var(--neon-gold); color: var(--neon-gold); }
+    .admin-action-btn.revoke { border-color: var(--neon-red); color: var(--neon-red); }
+
+    /* Image Studio */
+    .image-content { display: flex; flex-direction: column; height: 100%; }
+    .image-toolbar { display: flex; gap: 8px; padding: 10px 12px; background: rgba(0, 240, 255, 0.03); border-bottom: 1px solid rgba(0, 240, 255, 0.08); flex-wrap: wrap; align-items: center; }
+    .image-prompt-area { padding: 12px; border-bottom: 1px solid rgba(0, 240, 255, 0.08); }
+    .image-prompt-input { width: 100%; background: var(--bg-tertiary); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 6px; padding: 10px 14px; color: var(--text-bright); font-size: 13px; outline: none; resize: vertical; min-height: 60px; }
+    .image-prompt-input:focus { border-color: var(--neon-cyan); }
+    .image-gallery { flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; align-content: start; }
+    .image-item { aspect-ratio: 1; background: rgba(0, 240, 255, 0.02); border: 1px solid rgba(0, 240, 255, 0.08); border-radius: 8px; overflow: hidden; cursor: pointer; transition: all 0.2s ease; position: relative; }
+    .image-item:hover { border-color: var(--neon-cyan); transform: scale(1.02); }
+    .image-item img { width: 100%; height: 100%; object-fit: cover; }
+    .image-item.loading { display: flex; align-items: center; justify-content: center; }
+    .image-item.loading::after { content: ''; width: 30px; height: 30px; border: 2px solid var(--neon-cyan); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+
+    /* Login */
+    .login-overlay { position: fixed; inset: 0; background: rgba(0, 1, 1, 0.97); z-index: 9000; display: flex; align-items: center; justify-content: center; }
+    .login-overlay.hidden { display: none; }
+    .login-modal { width: 360px; background: rgba(0, 2, 8, 0.95); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 16px; padding: 28px; backdrop-filter: blur(20px); animation: window-open 0.3s ease-out; }
+    .login-logo { font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 900; text-align: center; margin-bottom: 6px; color: var(--text-bright); }
+    .login-logo span { color: var(--neon-cyan); }
+    .login-subtitle { text-align: center; font-size: 11px; color: var(--text-dim); margin-bottom: 22px; }
+    .login-form { display: flex; flex-direction: column; gap: 10px; }
+    .login-input { padding: 12px 14px; background: var(--bg-tertiary); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 8px; color: var(--text-bright); font-family: 'Rajdhani', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s ease; }
+    .login-input:focus { border-color: var(--neon-cyan); }
+    .login-submit { padding: 12px; background: var(--neon-cyan); border: none; border-radius: 8px; color: var(--bg-primary); font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 4px; transition: all 0.2s ease; }
+    .login-submit:hover { filter: brightness(1.1); }
+    .login-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--text-dim); font-size: 10px; }
+    .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: rgba(0, 240, 255, 0.08); }
+    .login-guest { width: 100%; padding: 12px; background: transparent; border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 8px; color: var(--text-bright); font-family: 'Rajdhani', sans-serif; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; }
+    .login-guest:hover { background: rgba(0, 240, 255, 0.1); border-color: var(--neon-cyan); }
+    .login-error { background: rgba(255, 0, 85, 0.1); border: 1px solid var(--neon-red); border-radius: 6px; padding: 8px; font-size: 11px; color: var(--neon-red); display: none; text-align: center; }
+    .login-error.visible { display: block; }
+
+    /* Premium Modal */
+    .premium-overlay { position: fixed; inset: 0; background: rgba(0, 1, 1, 0.9); z-index: 9500; display: flex; align-items: center; justify-content: center; }
+    .premium-overlay.hidden { display: none; }
+    .premium-modal { width: 320px; background: rgba(0, 2, 8, 0.95); border: 1px solid rgba(255, 204, 0, 0.3); border-radius: 16px; padding: 24px; text-align: center; animation: window-open 0.3s ease-out; }
+    .premium-close { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 5px; }
+    .premium-close:hover { color: var(--text-bright); }
+
+    /* User Menu */
+    .user-menu { position: absolute; top: 20px; right: 20px; z-index: 100; }
+    .user-btn { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(0, 2, 8, 0.92); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 20px; cursor: pointer; transition: all 0.2s ease; }
+    .user-btn:hover { border-color: var(--neon-cyan); }
+    .user-avatar { width: 26px; height: 26px; background: var(--neon-cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-size: 11px; color: var(--bg-primary); font-weight: 700; }
+    .user-info { display: flex; flex-direction: column; }
+    .user-name { font-size: 11px; color: var(--text-bright); font-weight: 600; }
+    .user-role { font-size: 9px; color: var(--text-dim); }
+    .user-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; width: 180px; background: rgba(0, 2, 8, 0.95); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 10px; overflow: hidden; display: none; }
+    .user-dropdown.visible { display: block; animation: window-open 0.15s ease-out; }
+    .user-dropdown-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; transition: all 0.2s ease; font-size: 12px; color: var(--text-normal); }
+    .user-dropdown-item:hover { background: rgba(0, 240, 255, 0.1); color: var(--text-bright); }
+    .user-dropdown-item.logout { border-top: 1px solid rgba(0, 240, 255, 0.08); color: var(--neon-red); }
+
+    /* Others */
+    .clock-widget { position: absolute; top: 65px; right: 20px; text-align: right; z-index: 10; }
+    .clock-time { font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 700; color: var(--text-bright); letter-spacing: 2px; }
+    .clock-date { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+    .boot-screen { position: fixed; inset: 0; background: var(--bg-primary); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .boot-screen.hidden { display: none; }
+    .boot-logo { font-family: 'Orbitron', sans-serif; font-size: 44px; font-weight: 900; color: var(--text-bright); margin-bottom: 28px; animation: glitch 5s infinite; }
+    .boot-logo span { color: var(--neon-cyan); }
+    .boot-progress { width: 280px; height: 3px; background: var(--bg-tertiary); border-radius: 2px; overflow: hidden; margin-bottom: 18px; }
+    .boot-progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-violet)); transition: width 0.3s ease; }
+    .boot-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
+    .context-menu { position: absolute; background: rgba(0, 2, 8, 0.95); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 8px; backdrop-filter: blur(20px); padding: 5px 0; min-width: 160px; z-index: 5000; display: none; }
+    .context-menu.visible { display: block; animation: window-open 0.15s ease-out; }
+    .context-menu-item { display: flex; align-items: center; gap: 8px; padding: 7px 12px; cursor: pointer; transition: all 0.2s ease; font-size: 12px; color: var(--text-normal); }
+    .context-menu-item:hover { background: rgba(0, 240, 255, 0.1); color: var(--neon-cyan); }
+    .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-120%); background: rgba(0, 2, 8, 0.95); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 8px; backdrop-filter: blur(20px); padding: 10px 20px; z-index: 6000; transition: transform 0.3s ease; }
+    .notification.visible { transform: translateX(-50%) translateY(0); }
+    .notification-body { font-size: 12px; color: var(--text-bright); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .window { min-width: 95vw; width: 95vw !important; left: 2.5vw !important; }
+      .admin-stats { grid-template-columns: 1fr; }
+      .taskbar { width: 95%; padding: 5px 8px; }
+      .taskbar-item { width: 34px; height: 34px; }
+      .system-tray { display: none; }
+      .clock-widget { display: none; }
+      .icons-grid { grid-template-columns: repeat(4, 1fr); top: 10px; left: 10px; gap: 6px; }
+      .desktop-icon { width: 56px; padding: 6px 2px; }
+      .desktop-icon span { font-size: 8px; }
+      .user-menu { top: 10px; right: 10px; }
+      .login-modal, .premium-modal { width: 92%; padding: 18px; }
+      .ide-main { flex-direction: column; }
+      .ide-preview { min-height: 200px; }
+      .game-sidebar { width: 100%; max-height: 200px; }
+      .game-main { flex-direction: column; }
+      .github-sidebar { width: 100%; max-height: 150px; }
+      .github-main { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Boot Screen -->
+  <div class="boot-screen" id="bootScreen">
+    <div class="boot-logo">NEXUS<span>.</span>OS</div>
+    <div class="boot-progress"><div class="boot-progress-fill" id="bootProgress"></div></div>
+    <div class="boot-text" id="bootText">Initializing Neural Kernel...</div>
+  </div>
+
+  <!-- Login Overlay -->
+  <div class="login-overlay hidden" id="loginOverlay">
+    <div class="login-modal">
+      <div class="login-logo">NEXUS<span>.</span>OS</div>
+      <div class="login-subtitle">Sentient Operating System v9.0</div>
+      <div class="login-error" id="loginError">Invalid username or password</div>
+      <form class="login-form" id="loginForm">
+        <input type="text" class="login-input" id="loginUsername" placeholder="Username" required autocomplete="username">
+        <input type="password" class="login-input" id="loginPassword" placeholder="Password" required autocomplete="current-password">
+        <button type="submit" class="login-submit">Access System</button>
+      </form>
+      <div class="login-divider">or continue as</div>
+      <button class="login-guest" id="guestLoginBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Guest User
+      </button>
+      <div class="text-center p-2 mt-2">
+        <span onclick="document.getElementById('admin-login').classList.toggle('hidden')" class="text-[9px] text-gray-700 cursor-pointer hover:text-cyan-500 transition tracking-widest">[ SYSTEM ADMIN ]</span>
+      </div>
+      <div class="p-3 border-t border-gray-800 hidden mt-3" id="admin-login">
+        <input type="password" id="admin-pass" class="cyber-input text-xs mb-2 text-center" placeholder="ADMIN PASSWORD">
+        <button onclick="Nexus.auth.adminLogin()" class="cyber-btn danger w-full text-xs">AUTHENTICATE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium Modal -->
+  <div class="premium-overlay hidden" id="premiumOverlay">
+    <div class="premium-modal" style="position: relative;">
+      <button class="premium-close" id="closePremiumBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      <span class="inline-block px-2 py-1 rounded-full text-[9px] font-bold mb-2" style="background: linear-gradient(135deg, var(--neon-gold), #ff9500); color: #000;">UNLIMITED</span>
+      <h2 class="text-xl font-bold text-white mb-1">Insufficient Balance</h2>
+      <p class="text-xs text-gray-400 mb-4">Use your own API Key for unlimited usage.</p>
+      <input class="cyber-input text-xs mb-2" id="modal-api-key" placeholder="Enter OpenAI Key (sk-...)">
+      <button class="cyber-btn success w-full text-xs" id="modal-save-key">Save & Continue</button>
+    </div>
+  </div>
+
+  <!-- Main Desktop -->
+  <div class="desktop" id="desktop">
+    <canvas id="neural-canvas"></canvas>
+    <div class="ambient-layer"><div class="glow-orb cyan"></div><div class="glow-orb magenta"></div><div class="glow-orb violet"></div></div>
+    <div class="grid-overlay"></div>
+    <div class="scan-line"></div>
+
+    <!-- User Menu -->
+    <div class="user-menu" id="userMenu">
+      <div class="user-btn" id="userBtn">
+        <div class="user-avatar" id="userAvatar">G</div>
+        <div class="user-info"><span class="user-name" id="userName">Guest</span><span class="user-role" id="userRole">Guest User</span></div>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-item" id="upgradeBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--neon-gold)" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Unlimited Key</div>
+        <div class="user-dropdown-item" id="adminBtn" style="display: none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6"/></svg>Admin Panel</div>
+        <div class="user-dropdown-item logout" id="logoutBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</div>
+      </div>
+    </div>
+
+    <!-- Clock -->
+    <div class="clock-widget"><div class="clock-time" id="clockTime">00:00:00</div><div class="clock-date" id="clockDate">Loading...</div></div>
+
+    <!-- Desktop Icons -->
+    <div class="icons-grid">
+      <div class="desktop-icon" data-app="ai-chat"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>AI Chat</span></div>
+      <div class="desktop-icon premium" data-app="art-studio"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-magenta)" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>Art Studio</span></div>
+      <div class="desktop-icon" data-app="dev-lab"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Dev Lab</span></div>
+      <div class="desktop-icon" data-app="game-builder"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-gold)" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4M8 10v4M15 11h2M18 13h.01"/></svg><span>Games</span></div>
+      <div class="desktop-icon" data-app="radio"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-red)" stroke-width="1.5"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M19.07 4.93a10 10 0 0 1 0 14.14"/></svg><span>Radio</span></div>
+      <div class="desktop-icon" data-app="terminal"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="1.5"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8l4 4-4 4"/><line x1="13" y1="16" x2="17" y2="16"/></svg><span>Terminal</span></div>
+      <div class="desktop-icon" data-app="github-console"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="1.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77"/></svg><span>GitHub</span></div>
+      <div class="desktop-icon" data-app="monitor"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>System</span></div>
+      <div class="desktop-icon" data-app="settings"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-magenta)" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></div>
+    </div>
+
+    <!-- Windows Container -->
+    <div id="windowsContainer"></div>
+
+    <!-- Taskbar -->
+    <div class="taskbar">
+      <div class="taskbar-item" data-app="ai-chat"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="taskbar-item" data-app="dev-lab"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <div class="taskbar-item" data-app="terminal"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="1.5"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8l4 4-4 4"/></svg></div>
+      <div class="taskbar-item" data-app="radio"><svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-red)" stroke-width="1.5"><circle cx="12" cy="12" r="2"/></svg></div>
+      <div class="taskbar-divider"></div>
+      <div class="system-tray">
+        <div class="tray-item"><span class="value" id="cpuValue">--</span><span class="text-[9px] text-gray-600">%</span></div>
+        <div class="tray-item"><span class="value" id="memValue">--</span><span class="text-[9px] text-gray-600">GB</span></div>
+      </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+      <div class="context-menu-item" data-action="refresh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><span>Refresh Desktop</span></div>
+      <div class="context-menu-item" data-action="terminal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8l4 4-4 4"/></svg><span>Open Terminal</span></div>
+      <div class="context-menu-item" data-action="settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg><span>Settings</span></div>
+      <div class="context-menu-item" data-action="about"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>About NEXUS OS</span></div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"><div class="notification-body" id="notificationBody">Welcome</div></div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // NEXUS OS V9.0 - UNLIMITED EDITION (PUTER.JS INTEGRATED)
+    // ═══════════════════════════════════════════════════════════════
+    
+    const $ = id => document.getElementById(id);
+    const esc = t => { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
+    
+    // State Management
+    const loadSetting = (key, def) => { try { return localStorage.getItem(key) || def; } catch(e) { return def; } };
+    const saveSetting = (key, val) => { try { localStorage.setItem(key, val); } catch(e) {} };
+
+    const state = {
+      windows: [],
+      activeWindow: null,
+      windowIdCounter: 0,
+      uptime: 0,
+      cpuUsage: 23,
+      memUsage: 4.2,
+      currentUser: JSON.parse(loadSetting('nexus_session', 'null')),
+      provider: loadSetting('nexus_prov', 'auto'),
+      apiKeys: JSON.parse(loadSetting('nexus_keys', '{}')),
+      dragging: null,
+      resizing: null
+    };
+
+    // Users Database
+    const DEFAULT_USERS = [
+      { id: 1, username: 'admin', password: 'dauptr', role: 'admin', premium: true },
+      { id: 2, username: 'nexus', password: 'nexus123', role: 'user', premium: true },
+      { id: 3, username: 'user', password: 'user123', role: 'user', premium: false },
+      { id: 4, username: 'guest', password: '', role: 'guest', premium: false }
+    ];
+
+    let usersDB = DEFAULT_USERS;
+    try {
+      const storedDB = localStorage.getItem('nexus_db');
+      if (storedDB) usersDB = JSON.parse(storedDB);
+    } catch(e) {}
+
+    const saveDB = () => { try { localStorage.setItem('nexus_db', JSON.stringify(usersDB)); } catch(e) {} };
+
+    // ═══════════════════════════════════════════════════════════════
+    // UTILITY FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function showNotification(msg, duration = 3000) {
+      const c = $('notification');
+      $('notificationBody').textContent = msg;
+      c.classList.add('visible');
+      setTimeout(() => c.classList.remove('visible'), duration);
+    }
+
+    function createProgress(container, label = 'Progress') {
+      const id = 'prog_' + Date.now();
+      const html = `
+        <div class="progress-container" id="${id}">
+          <div class="progress-label"><span>${label}</span><span class="progress-percent">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill striped" style="width:0%"></div></div>
+          <div class="progress-status">Initializing...</div>
+        </div>
+      `;
+      if (typeof container === 'string') {
+        $(container).insertAdjacentHTML('beforeend', html);
+      } else {
+        container.insertAdjacentHTML('beforeend', html);
+      }
+      return {
+        el: $(id),
+        update: function(percent, status) {
+          this.el.querySelector('.progress-fill').style.width = percent + '%';
+          this.el.querySelector('.progress-percent').textContent = percent + '%';
+          if (status) this.el.querySelector('.progress-status').textContent = status;
+        },
+        complete: function(status = 'Complete') {
+          this.el.querySelector('.progress-fill').classList.remove('striped');
+          this.update(100, status);
+        },
+        remove: function() {
+          this.el.remove();
+        }
+      };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // UNLIMITED API CALLS (PUTER.JS + CUSTOM KEY SUPPORT)
+    // ═══════════════════════════════════════════════════════════════
+
+    const API = {
+      async chat(messages, model = 'auto') {
+        // 1. Check for Custom Key (Unlimited Mode)
+        const apiKey = state.apiKeys?.openai;
+        if (apiKey) {
+          try {
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+              body: JSON.stringify({ model: 'gpt-4o-mini', messages })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            return data.choices[0].message.content;
+          } catch (e) { return `API Error: ${e.message}`; }
+        }
+
+        // 2. Fallback to Puter SDK (Free)
+        try {
+          if (window.puter?.ai?.chat) {
+            const res = await window.puter.ai.chat(messages, { model: model === 'auto' ? 'gpt-4o-mini' : model });
+            return typeof res === 'string' ? res : res.message?.content || 'Done.';
+          }
+          return 'Puter SDK not loaded.';
+        } catch (e) {
+          // Handle Balance Error
+          if (e.message && (e.message.includes('Low Balance') || e.message.includes('funding'))) {
+            $('premiumOverlay').classList.remove('hidden');
+            return '⚠️ Balance Depleted. Use Custom Key.';
+          }
+          return `Error: ${e.message}`;
+        }
+      },
+
+      async generateImage(prompt, size = '1024x1024') {
+        // Custom Key
+        const apiKey = state.apiKeys?.openai;
+        if (apiKey) {
+           try {
+            const res = await fetch('https://api.openai.com/v1/images/generations', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+              body: JSON.stringify({ prompt, n: 1, size, response_format: 'b64_json' })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            return data.data[0].b64_json;
+          } catch (e) { showNotification('API Image Error: ' + e.message); return null; }
+        }
+
+        // Puter SDK
+        try {
+          if (window.puter?.ai?.txt2img) {
+            const res = await window.puter.ai.txt2img(prompt + ', digital art');
+            const url = typeof res === 'string' ? res : res.url || res.image;
+            return url; // Returns URL
+          }
+          return null;
+        } catch (e) {
+          if (e.message && (e.message.includes('Low Balance'))) $('premiumOverlay').classList.remove('hidden');
+          return null;
+        }
+      },
+
+      async terminal(cmd, cwd = '/home/user') {
+        // Simulate terminal for demo, or connect to a real backend if available
+        return { stdout: `Executed: ${cmd}`, stderr: '', code: 0 };
+      },
+
+      async github(action, params = {}) {
+        // Mock for now
+        return { error: 'Connect GitHub in Settings' };
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // WINDOW MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════
+
+    function createWindow(appId) {
+      const premiumApps = ['art-studio'];
+      if (premiumApps.includes(appId) && !state.currentUser?.premium && state.currentUser?.role !== 'admin') {
+        $('premiumOverlay').classList.remove('hidden');
+        return;
+      }
+
+      const existing = state.windows.find(w => w.appId === appId);
+      if (existing) {
+        if (existing.minimized) { existing.minimized = false; existing.element.classList.remove('minimized'); }
+        focusWindow(existing.id);
+        return;
+      }
+
+      const cfg = getWindowConfig(appId);
+      const id = ++state.windowIdCounter;
+
+      const el = document.createElement('div');
+      el.className = 'window';
+      el.id = `win-${id}`;
+      el.style.cssText = `width:${cfg.w};height:${cfg.h};left:${80 + (id % 6) * 40}px;top:${60 + (id % 6) * 30}px;`;
+      el.innerHTML = `
+        <div class="window-header">
+          <div class="window-title">${cfg.ico}<span>${cfg.t}</span></div>
+          <div class="window-controls">
+            <button class="window-btn minimize" title="Minimize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button class="window-btn maximize" title="Maximize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
+            <button class="window-btn close" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+          </div>
+        </div>
+        <div class="window-content">${cfg.c}</div>
+        <div class="window-resize"></div>
+      `;
+
+      $('windowsContainer').appendChild(el);
+
+      const wd = { id, appId, element: el, minimized: false, maximized: false, prevState: null };
+      state.windows.push(wd);
+
+      el.querySelector('.close').onclick = () => closeWindow(id);
+      el.querySelector('.minimize').onclick = () => minimizeWindow(id);
+      el.querySelector('.maximize').onclick = () => toggleMaximize(id);
+
+      const header = el.querySelector('.window-header');
+      header.onmousedown = (e) => {
+        if (e.target.closest('.window-controls')) return;
+        if (wd.maximized) return;
+        e.preventDefault();
+        state.dragging = { id, startX: e.clientX - el.offsetLeft, startY: e.clientY - el.offsetTop };
+        focusWindow(id);
+      };
+
+      const resizeHandle = el.querySelector('.window-resize');
+      resizeHandle.onmousedown = (e) => {
+        if (wd.maximized) return;
+        e.preventDefault(); e.stopPropagation();
+        state.resizing = { id, startX: e.clientX, startY: e.clientY, startW: el.offsetWidth, startH: el.offsetHeight };
+        focusWindow(id);
+      };
+
+      el.onmousedown = () => focusWindow(id);
+
+      focusWindow(id);
+      setTimeout(() => initAppContent(appId, el), 50);
+      updateTaskbar();
+    }
+
+    function focusWindow(id) {
+      state.windows.forEach(w => w.element.classList.remove('focused'));
+      const w = state.windows.find(w => w.id === id);
+      if (w) { w.element.classList.add('focused'); state.activeWindow = id; }
+      updateTaskbar();
+    }
+
+    function closeWindow(id) {
+      const idx = state.windows.findIndex(w => w.id === id);
+      if (idx > -1) { state.windows[idx].element.remove(); state.windows.splice(idx, 1); updateTaskbar(); }
+    }
+
+    function minimizeWindow(id) {
+      const w = state.windows.find(w => w.id === id);
+      if (w) { w.minimized = true; w.element.classList.add('minimized'); updateTaskbar(); }
+    }
+
+    function toggleMaximize(id) {
+      const w = state.windows.find(w => w.id === id);
+      if (w) {
+        if (w.maximized) { if (w.prevState) w.element.style.cssText = w.prevState; w.maximized = false; }
+        else { w.prevState = w.element.style.cssText; w.element.style.cssText = 'width:100%;height:calc(100% - 70px);left:0;top:0;'; w.maximized = true; }
+      }
+    }
+
+    function updateTaskbar() {
+      document.querySelectorAll('.taskbar-item[data-app]').forEach(btn => {
+        const appId = btn.dataset.app;
+        const w = state.windows.find(win => win.appId === appId);
+        btn.classList.toggle('active', w && !w.minimized);
+      });
+    }
+
+    // Global mouse events
+    document.addEventListener('mousemove', (e) => {
+      if (state.dragging) {
+        const w = state.windows.find(win => win.id === state.dragging.id);
+        if (w) {
+          let newX = e.clientX - state.dragging.startX; let newY = e.clientY - state.dragging.startY;
+          newX = Math.max(0, Math.min(window.innerWidth - 100, newX)); newY = Math.max(0, Math.min(window.innerHeight - 100, newY));
+          w.element.style.left = newX + 'px'; w.element.style.top = newY + 'px';
+        }
+      }
+      if (state.resizing) {
+        const w = state.windows.find(win => win.id === state.resizing.id);
+        if (w) {
+          const newW = Math.max(300, state.resizing.startW + (e.clientX - state.resizing.startX));
+          const newH = Math.max(200, state.resizing.startH + (e.clientY - state.resizing.startY));
+          w.element.style.width = newW + 'px'; w.element.style.height = newH + 'px';
+        }
+      }
+    });
+
+    document.addEventListener('mouseup', () => { state.dragging = null; state.resizing = null; });
+
+    // ═══════════════════════════════════════════════════════════════
+    // WINDOW CONFIGURATIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function getWindowConfig(id) {
+      const configs = {
+        'ai-chat': {
+          t: 'AI Chat', w: '580px', h: '480px',
+          ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="1.5" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+          c: `
+            <div class="ai-chat-content">
+              <div class="chat-header">
+                <div class="model-selector">
+                  <button class="model-btn active" data-model="auto">Auto</button>
+                  <button class="model-btn" data-model="claude">Claude</button>
+                  <button class="model-btn" data-model="gpt-4">GPT-4</button>
+                </div>
+              </div>
+              <div class="chat-messages" id="chatMsg"></div>
+              <div class="chat-input-area">
+                <textarea class="chat-input" id="chatInput" placeholder="Type your message..." rows="1"></textarea>
+                <button class="chat-send-btn" id="chatSend">SEND</button>
+              </div>
+            </div>`
+        },
+        'dev-lab': {
+          t: 'Dev Lab IDE', w: '850px', h: '500px',
+          ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="1.5" width="16" height="16"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+          c: `
+            <div class="ide-content">
+              <div class="ide-toolbar">
+                <button class="cyber-btn text-xs" id="ideRun">▶ Run</button>
+                <button class="cyber-btn success text-xs" id="ideAI">AI Fix</button>
+              </div>
+              <div class="ide-main">
+                <div class="ide-editor">
+                  <textarea id="ideCode" spellcheck="false">// Welcome to NEXUS Dev Lab
+console.log("Hello NEXUS OS");</textarea>
+                </div>
+                <div class="ide-preview"><iframe id="idePreview"></iframe></div>
+              </div>
+            </div>`
+        },
+        'terminal': {
+          t: 'Terminal', w: '650px', h: '400px',
+          ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="1.5" width="16" height="16"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8l4 4-4 4"/></svg>',
+          c: `
+            <div class="terminal-content">
+              <div class="terminal-output" id="termOutput">
+                <div class="terminal-line info">NEXUS OS Terminal v9.0</div>
+                <div class="terminal-line output">Type 'help' for commands.</div>
+              </div>
+              <div class="terminal-input-line">
+                <span class="terminal-prompt">nexus@os:~$</span>
+                <input type="text" class="terminal-input" id="termInput" autofocus>
+              </div>
+            </div>`
+        },
+        'radio': {
+          t: 'NEXUS Radio', w: '420px', h: '520px',
+          ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-red)" stroke-width="1.5" width="16" height="16"><circle cx="12" cy="12" r="2"/></svg>',
+          c: `
+            <div class="radio-content">
+              <div class="radio-header">
+                <div class="radio-search">
+                  <input class="radio-search-input" id="radioSearch" placeholder="Search...">
+                  <button class="radio-search-btn" id="radioSearchBtn">GO</button>
+                </div>
+              </div>
+              <div class="radio-now-playing">
+                <div class="radio-art" id="radioArt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="2"/></svg></div>
+                <div class="radio-info">
+                  <div class="radio-station-name" id="radioName">Select station</div>
+                  <div class="radio-station-genre" id="radioGenre">--</div>
+                </div>
+                <div class="radio-controls">
+                  <button class="radio-btn vol" id="radioVolDn">-</button>
+                  <button class="radio-btn play" id="radioPlay"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                  <button class="radio-btn vol" id="radioVolUp">+</button>
+                </div>
+              </div>
+              <div class="radio-stations" id="radioList"></div>
+            </div>
+            <audio id="radioAudio" style="display:none" preload="none"></audio>`
+        },
+        'game-builder': { t: 'Game Builder', w: '800px', h: '500px', ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-gold)" stroke-width="1.5" width="16" height="16"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>', c: `<div class="game-content" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim)">Select a game template...</div>` },
+        'github-console': { t: 'GitHub Console', w: '800px', h: '480px', ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="1.5" width="16" height="16"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87"/></svg>', c: `<div class="github-content" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim)">Connect GitHub in Settings</div>` },
+        'art-studio': {
+          t: 'Art Studio', w: '600px', h: '500px',
+          ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-magenta)" stroke-width="1.5" width="16" height="16"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>',
+          c: `
+            <div class="image-content">
+              <div class="image-toolbar">
+                <select class="settings-select" id="imgSize"><option value="1024x1024">1024x1024</option></select>
+                <button class="cyber-btn text-xs" id="imgGenerate">Generate</button>
+              </div>
+              <div class="image-prompt-area">
+                <textarea class="image-prompt-input" id="imgPrompt" placeholder="Describe image..."></textarea>
+              </div>
+              <div class="image-gallery" id="imgGallery"></div>
+            </div>`
+        },
+        'settings': {
+          t: 'Settings', w: '400px', h: '420px',
+          ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-magenta)" stroke-width="1.5" width="16" height="16"><circle cx="12" cy="12" r="3"/></svg>',
+          c: `
+            <div class="settings-content">
+              <div class="settings-section">
+                <div class="settings-section-title">Unlimited Mode</div>
+                <div class="settings-row">
+                  <span class="settings-label">OpenAI Key</span>
+                  <input class="settings-input" id="settingApiKey" type="password" placeholder="sk-..." value="${state.apiKeys?.openai || ''}">
+                </div>
+                <button class="cyber-btn w-full mt-2" id="saveSettings">Save Keys</button>
+              </div>
+            </div>`
+        },
+        'admin': {
+          t: 'Admin Panel', w: '550px', h: '400px',
+          ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-gold)" stroke-width="1.5" width="16" height="16"><circle cx="12" cy="12" r="3"/></svg>',
+          c: `
+            <div class="admin-content">
+              <div class="admin-header"><span class="admin-title">User Management</span></div>
+              <div class="admin-stats">
+                <div class="admin-stat"><div class="admin-stat-value">${usersDB.length}</div><div class="admin-stat-label">Users</div></div>
+              </div>
+              <table class="admin-users-table">
+                <thead><tr><th>User</th><th>Role</th><th>Action</th></tr></thead>
+                <tbody id="adminTable"></tbody>
+              </table>
+            </div>`
+        },
+        'monitor': {
+          t: 'System Monitor', w: '450px', h: '380px',
+          ico: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="1.5" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>',
+          c: `<div class="settings-content"><div class="settings-section"><div class="settings-section-title">Resources</div><div class="progress-container"><div class="progress-label"><span>CPU</span><span id="monCpu">23%</span></div><div class="progress-bar"><div class="progress-fill" id="monCpuBar" style="width:23%"></div></div></div></div></div>`
+        }
+      };
+      return configs[id] || configs['settings'];
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // APP INITIALIZERS
+    // ═══════════════════════════════════════════════════════════════
+
+    function initAppContent(appId, el) {
+      switch(appId) {
+        case 'ai-chat': initChat(el); break;
+        case 'dev-lab': initIDE(el); break;
+        case 'terminal': initTerminal(el); break;
+        case 'radio': initRadio(el); break;
+        case 'art-studio': initArtStudio(el); break;
+        case 'settings': initSettings(el); break;
+        case 'admin': initAdmin(el); break;
+      }
+    }
+
+    // AI Chat
+    function initChat(el) {
+      const messages = el.querySelector('#chatMsg');
+      const input = el.querySelector('#chatInput');
+      const sendBtn = el.querySelector('#chatSend');
+      const modelBtns = el.querySelectorAll('.model-btn');
+      let currentModel = 'auto';
+
+      messages.innerHTML = `<div class="chat-message system"><div class="chat-avatar">N</div><div class="chat-bubble">Welcome. I am powered by Puter.js or your API Key.</div></div>`;
+
+      modelBtns.forEach(btn => {
+        btn.onclick = () => {
+          modelBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentModel = btn.dataset.model;
+        };
+      });
+
+      async function sendMessage() {
+        const text = input.value.trim(); if (!text) return;
+        messages.innerHTML += `<div class="chat-message user"><div class="chat-avatar">U</div><div class="chat-bubble">${esc(text)}</div></div>`;
+        input.value = '';
+        messages.innerHTML += `<div class="chat-message ai" id="typing"><div class="chat-avatar">N</div><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+        messages.scrollTop = messages.scrollHeight;
+
+        const response = await API.chat([{ role: 'user', content: text }], currentModel);
+        
+        const typingEl = $('typing');
+        if (typingEl) typingEl.outerHTML = `<div class="chat-message ai"><div class="chat-avatar">N</div><div class="chat-bubble">${esc(response)}</div></div>`;
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      sendBtn.onclick = sendMessage;
+      input.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
+    }
+
+    // IDE
+    function initIDE(el) {
+      const code = el.querySelector('#ideCode');
+      const preview = el.querySelector('#idePreview');
+      const runBtn = el.querySelector('#ideRun');
+
+      function runCode() {
+        preview.srcdoc = `<!DOCTYPE html><html><head><style>*{margin:0;padding:0}</style></head><body><script>${code.value}<\/script></body></html>`;
+      }
+      runBtn.onclick = runCode; runCode();
+    }
+
+    // Terminal
+    function initTerminal(el) {
+      const output = el.querySelector('#termOutput');
+      const input = el.querySelector('#termInput');
+
+      const commands = {
+        help: () => 'Available: help, clear, date, whoami, ai <q>',
+        clear: () => { output.innerHTML = ''; return ''; },
+        date: () => new Date().toString(),
+        whoami: () => state.currentUser?.username || 'guest',
+        ai: async (args) => await API.chat([{role:'user',content:args.join(' ')}])
+      };
+
+      input.onkeydown = async (e) => {
+        if (e.key === 'Enter') {
+          const [cmd, ...args] = input.value.trim().split(' ');
+          output.innerHTML += `<div class="terminal-line command">$ ${input.value}</div>`;
+          input.value = '';
+          if (commands[cmd.toLowerCase()]) {
+            const res = await commands[cmd.toLowerCase()](args);
+            if (res) output.innerHTML += `<div class="terminal-line output">${esc(res)}</div>`;
+          } else output.innerHTML += `<div class="terminal-line error">Command not found</div>`;
+        }
+      };
+    }
+
+    // Radio
+    function initRadio(el) {
+      const audio = el.querySelector('#radioAudio');
+      const playBtn = el.querySelector('#radioPlay');
+      const listEl = el.querySelector('#radioList');
+      const searchInput = el.querySelector('#radioSearch');
+      
+      audio.volume = 0.7;
+
+      async function search(q) {
+        listEl.innerHTML = 'Searching...';
+        const res = await fetch(`https://de1.api.radio-browser.info/json/stations/byname/${q}?limit=10`);
+        const data = await res.json();
+        listEl.innerHTML = data.map((s,i) => `<div class="station-card" data-i="${i}" data-url="${s.url_resolved}">${s.name}</div>`).join('');
+        
+        listEl.querySelectorAll('.station-card').forEach(c => {
+          c.onclick = () => {
+            audio.src = c.dataset.url; audio.play();
+            $('radioName').textContent = c.textContent;
+            playBtn.innerHTML = '⏸';
+          };
+        });
+      }
+      
+      el.querySelector('#radioSearchBtn').onclick = () => search(searchInput.value);
+      playBtn.onclick = () => { if(audio.paused) audio.play(); else audio.pause(); playBtn.innerHTML = audio.paused?'▶':'⏸'; };
+      el.querySelector('#radioVolUp').onclick = () => audio.volume = Math.min(1, audio.volume+0.1);
+      el.querySelector('#radioVolDn').onclick = () => audio.volume = Math.max(0, audio.volume-0.1);
+    }
+
+    // Art Studio
+    function initArtStudio(el) {
+      const prompt = el.querySelector('#imgPrompt');
+      const gallery = el.querySelector('#imgGallery');
+      const btn = el.querySelector('#imgGenerate');
+
+      btn.onclick = async () => {
+        const p = prompt.value.trim(); if(!p) return;
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
+        
+        const url = await API.generateImage(p);
+        if(url) {
+          const img = document.createElement('img'); img.src = url; img.style.width='100%';
+          const div = document.createElement('div'); div.className='image-item'; div.appendChild(img);
+          gallery.prepend(div);
+        }
+        btn.disabled = false;
+        btn.textContent = 'Generate';
+      };
+    }
+
+    // Settings
+    function initSettings(el) {
+      el.querySelector('#saveSettings').onclick = () => {
+        state.apiKeys = { openai: el.querySelector('#settingApiKey').value };
+        saveSetting('nexus_keys', JSON.stringify(state.apiKeys));
+        showNotification('Keys Saved! Unlimited mode active.');
+      };
+    }
+
+    // Admin
+    function initAdmin(el) {
+      const tbody = el.querySelector('#adminTable');
+      tbody.innerHTML = usersDB.map(u => `<tr><td>${u.username}</td><td>${u.role}</td><td><button onclick="alert('Demo')">Edit</button></td></tr>`).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // AUTHENTICATION
+    // ═══════════════════════════════════════════════════════════════
+
+    const Nexus = {
+      auth: {
+        login: (user) => {
+          state.currentUser = user; state.isAdmin = user.role === 'admin'; state.isPremium = user.premium || user.role === 'admin';
+          try { localStorage.setItem('nexus_session', JSON.stringify(user)); } catch(e) {}
+          Nexus.ui.boot();
+        },
+        adminLogin: () => {
+          const pass = $('admin-pass').value;
+          const admin = usersDB.find(u => u.username === 'admin');
+          if (pass === admin.password) Nexus.auth.login(admin);
+          else { $('loginError').textContent = 'ACCESS DENIED'; $('loginError').classList.add('visible'); }
+        },
+        logout: () => { state.currentUser = null; try { localStorage.removeItem('nexus_session'); } catch(e) {} location.reload(); }
+      },
+      ui: {
+        boot: () => {
+          $('loginOverlay').classList.add('hidden');
+          $('userAvatar').textContent = state.currentUser.username[0].toUpperCase();
+          $('userName').textContent = state.currentUser.username;
+          $('userRole').textContent = state.isPremium ? 'Premium' : 'Guest';
+          $('adminBtn').style.display = state.isAdmin ? 'flex' : 'none';
+          $('upgradeBtn').style.display = state.isPremium ? 'none' : 'flex';
+          showNotification(`Welcome, ${state.currentUser.username}!`);
+        }
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // CANVAS BACKGROUND
+    // ═══════════════════════════════════════════════════════════════
+
+    function initCanvas() {
+      const canvas = $('neural-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = innerWidth; canvas.height = innerHeight;
+      const particles = Array.from({ length: 50 }, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }));
+      function draw() {
+        ctx.fillStyle = 'rgba(0, 1, 1, 0.1)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fillStyle = 'rgba(0, 240, 255, 0.6)'; ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+      window.onresize = () => { canvas.width = innerWidth; canvas.height = innerHeight; };
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // EVENT LISTENERS
+    // ═══════════════════════════════════════════════════════════════
+
+    function initEvents() {
+      $('loginForm').onsubmit = (e) => {
+        e.preventDefault();
+        const user = usersDB.find(u => u.username.toLowerCase() === $('loginUsername').value.toLowerCase() && u.password === $('loginPassword').value);
+        if (user) Nexus.auth.login(user);
+        else { $('loginError').textContent = 'Invalid'; $('loginError').classList.add('visible'); }
+      };
+      $('guestLoginBtn').onclick = () => Nexus.auth.login(usersDB.find(u => u.username === 'guest'));
+      $('logoutBtn').onclick = () => Nexus.auth.logout();
+      $('closePremiumBtn').onclick = () => $('premiumOverlay').classList.add('hidden');
+      $('modal-save-key').onclick = () => {
+        state.apiKeys = { openai: $('modal-api-key').value };
+        saveSetting('nexus_keys', JSON.stringify(state.apiKeys));
+        $('premiumOverlay').classList.add('hidden');
+        showNotification('Unlimited Key Activated!');
+      };
+
+      $('userBtn').onclick = () => $('userDropdown').classList.toggle('visible');
+      $('upgradeBtn').onclick = () => { $('userDropdown').classList.remove('visible'); $('premiumOverlay').classList.remove('hidden'); };
+      $('adminBtn').onclick = () => { $('userDropdown').classList.remove('visible'); createWindow('admin'); };
+
+      document.querySelectorAll('.desktop-icon').forEach(icon => { icon.ondblclick = () => createWindow(icon.dataset.app); });
+      document.querySelectorAll('.taskbar-item[data-app]').forEach(item => { item.onclick = () => { const w = state.windows.find(w => w.appId === item.dataset.app); if (w) { w.minimized = false; w.element.classList.remove('minimized'); focusWindow(w.id); } else createWindow(item.dataset.app); }; });
+
+      $('desktop').oncontextmenu = (e) => {
+        if (e.target.id === 'neural-canvas' || e.target.classList.contains('desktop')) {
+          e.preventDefault();
+          $('contextMenu').style.left = e.clientX + 'px'; $('contextMenu').style.top = e.clientY + 'px'; $('contextMenu').classList.add('visible');
+        }
+      };
+      document.onclick = (e) => {
+        if (!e.target.closest('.context-menu')) $('contextMenu').classList.remove('visible');
+        if (!e.target.closest('.user-menu')) $('userDropdown').classList.remove('visible');
+      };
+
+      document.querySelectorAll('.context-menu-item').forEach(item => {
+        item.onclick = () => {
+          const action = item.dataset.action;
+          if (action === 'refresh') initCanvas();
+          if (action === 'terminal') createWindow('terminal');
+          if (action === 'settings') createWindow('settings');
+          $('contextMenu').classList.remove('visible');
+        };
+      });
+
+      setInterval(() => {
+        state.uptime++;
+        state.cpuUsage = Math.max(5, Math.min(95, state.cpuUsage + (Math.random() - 0.5) * 8));
+        state.memUsage = Math.max(2, Math.min(14, state.memUsage + (Math.random() - 0.5) * 0.3));
+        $('cpuValue').textContent = Math.round(state.cpuUsage);
+        $('memValue').textContent = state.memUsage.toFixed(1);
+        $('clockTime').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+        $('clockDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      }, 1000);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // BOOT SEQUENCE
+    // ═══════════════════════════════════════════════════════════════
+
+    function boot() {
+      const bootTexts = ['Initializing Neural Kernel...', 'Loading Puter SDK...', 'Establishing Links...', 'System Ready.'];
+      let progress = 0;
+      const bootInterval = setInterval(() => {
+        progress += 2;
+        $('bootProgress').style.width = progress + '%';
+        const textIdx = Math.floor(progress / 25);
+        if (textIdx < bootTexts.length) $('bootText').textContent = bootTexts[textIdx];
+        if (progress >= 100) {
+          clearInterval(bootInterval);
+          setTimeout(() => {
+            $('bootScreen').classList.add('hidden');
+            if (state.currentUser) Nexus.ui.boot();
+            else $('loginOverlay').classList.remove('hidden');
+          }, 500);
+        }
+      }, 50);
+      initCanvas(); initEvents();
+    }
+
+    boot();
+  </script>
+</body>
+</html>
