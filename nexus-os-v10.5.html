@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#000001">
+  <title>NEXUS OS V10.5 | Sentient Operating System</title>
+  <meta name="description" content="NEXUS OS - Advanced cyberpunk web OS with AI Copilot, Game Engine, Online Radio, Build Console, and more.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Rajdhani', sans-serif; background: linear-gradient(135deg, #000001 0%, #0a0a1a 50%, #050510 100%); color: #c0c8d8; }
+    input::placeholder, textarea::placeholder { color: rgba(100, 120, 150, 0.8) !important; opacity: 1 !important; }
+    input:focus, textarea:focus, select:focus { border-color: #00f0ff !important; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3) !important; outline: none; }
+    @keyframes pulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.1); } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes glow { 0%, 100% { box-shadow: 0 0 5px currentColor; } 50% { box-shadow: 0 0 20px currentColor, 0 0 30px currentColor; } }
+    @media (max-width: 767px) { input, textarea, select, button { font-size: 16px !important; } }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 5, 15, 0.5); }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.5); }
+    .copilot-btn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #8b00ff, #ff00aa); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 9000; box-shadow: 0 4px 20px rgba(139, 0, 255, 0.4); animation: glow 2s ease-in-out infinite; transition: transform 0.2s; }
+    .copilot-btn:hover { transform: scale(1.1); }
+    .copilot-panel { position: fixed; bottom: 90px; right: 20px; width: 380px; height: 500px; background: rgba(0, 5, 15, 0.98); border: 1px solid rgba(139, 0, 255, 0.4); border-radius: 16px; z-index: 9000; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="https://js.puter.com/v2/" async></script>
+  <script>
+    // NEXUS OS V10.5 - Advanced Single File Version
+    const NEXUS_OS = (() => {
+      const state = {
+        phase: 'boot', bootProgress: 0, bootText: 'Initializing Neural Kernel...',
+        currentUser: null, loginMode: 'login', loginError: '',
+        activeApp: null, windowMaximized: false,
+        notification: '', time: '', date: '', isMobile: window.innerWidth < 768,
+        
+        // AI Chat
+        aiMessages: [{ role: 'assistant', content: '🔮 Welcome to NEXUS AI V10.5! I\'m powered by advanced AI providers. How can I assist you today?' }],
+        aiInput: '', aiLoading: false,
+        
+        // Copilot - New Feature
+        copilotOpen: false,
+        copilotMessages: [{ role: 'assistant', content: '🤖 Hello! I\'m your NEXUS AI Copilot. I can help you with:\n• Game development & code\n• IDE programming assistance\n• Terminal commands\n• Radio station searches\n• Build & deployment guidance\n\nWhat can I help you with?' }],
+        copilotInput: '', copilotLoading: false, copilotContext: 'general',
+        
+        // YouTube
+        ytSearch: '', ytResults: [], ytCurrentVideo: null, ytPlaylist: [], ytSearchLoading: false,
+        
+        // Build Console - Enhanced
+        buildOutput: ['╔═══════════════════════════════════════════════════╗', '║     NEXUS Build Console v10.5                    ║', '║     Production Build & Deployment System          ║', '╚═══════════════════════════════════════════════════╝', ''],
+        buildProgress: 0, buildStatus: 'idle', buildTarget: 'production', deployTarget: 'space.z.ai',
+        buildLogs: [], compileErrors: [], installQueue: [],
+        
+        // Online Progress - New Feature
+        onlineProgress: { active: false, operations: [], total: 0, completed: 0 },
+        
+        // Radio - Enhanced with Online Search
+        radioStations: [
+          { name: 'Lo-Fi Beats', url: 'https://streams.ilovemusic.de/iloveradio17.mp3', genre: 'Lo-Fi', country: 'DE' },
+          { name: 'Chillout Lounge', url: 'https://streams.ilovemusic.de/iloveradio13.mp3', genre: 'Chill', country: 'DE' },
+          { name: 'Deep House', url: 'https://streams.ilovemusic.de/iloveradio14.mp3', genre: 'House', country: 'DE' },
+          { name: 'Classic Rock', url: 'https://streams.ilovemusic.de/iloveradio10.mp3', genre: 'Rock', country: 'DE' },
+          { name: 'Pop Hits', url: 'https://streams.ilovemusic.de/iloveradio1.mp3', genre: 'Pop', country: 'DE' },
+          { name: 'Hip Hop', url: 'https://streams.ilovemusic.de/iloveradio6.mp3', genre: 'Hip-Hop', country: 'DE' },
+          { name: 'Electronic', url: 'https://streams.ilovemusic.de/iloveradio2.mp3', genre: 'EDM', country: 'DE' },
+          { name: 'Jazz', url: 'https://strm112.1.fm/jazzmp3_mobile', genre: 'Jazz', country: 'US' },
+        ],
+        currentStation: null, isPlaying: false, radioVolume: 80,
+        radioSearchQuery: '', radioGenreFilter: '', radioOnlineResults: [], radioSearching: false,
+        radioGenres: ['Lo-Fi', 'Chill', 'House', 'Rock', 'Pop', 'Hip-Hop', 'EDM', 'Jazz', 'Classical', 'Ambient', 'Techno', 'Country'],
+        
+        // Art Studio
+        artPrompt: '', artImages: [], artLoading: false,
+        
+        // Games - Enhanced with Game Engine
+        gameScore: 0, gameHighScore: parseInt(localStorage.getItem('nexus_highscore') || '0'),
+        snakePosition: [{x: 5, y: 5}], snakeFood: {x: 10, y: 10}, snakeDirection: 'right', snakeGameActive: false,
+        gameEngine: { fps: 60, canvas: null, ctx: null, entities: [], particles: [] },
+        
+        // Terminal - Enhanced
+        terminalHistory: ['╔═══════════════════════════════════════╗', '║     NEXUS Terminal v10.5              ║', '║     Type "help" for commands          ║', '╚═══════════════════════════════════════╝', ''],
+        terminalInput: '',
+        
+        // IDE - Enhanced with Copilot
+        ideCode: `// NEXUS IDE V10.5 - AI-Powered Development
+// Click "AI Assist" for help!
+
+function createGame() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 400;
+  canvas.height = 300;
+  document.body.innerHTML = '';
+  document.body.appendChild(canvas);
+  document.body.style.background = '#0a0a1a';
+  
+  const ctx = canvas.getContext('2d');
+  let x = 200, y = 150;
+  
+  function draw() {
+    ctx.fillStyle = '#0a0a1a';
+    ctx.fillRect(0, 0, 400, 300);
+    ctx.fillStyle = '#00f0ff';
+    ctx.beginPath();
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.fill();
+    x += Math.random() * 4 - 2;
+    y += Math.random() * 4 - 2;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+createGame();`,
+        ideCopilotSuggestion: '',
+        
+        // Compile Console - New Feature
+        compileOutput: [], compileStatus: 'idle', compileLanguage: 'javascript',
+        
+        // Dependency Manager - New Feature
+        dependencies: [
+          { name: 'Node.js', version: '20.x', installed: true },
+          { name: 'Python', version: '3.12', installed: false },
+          { name: 'Java', version: '21', installed: false },
+          { name: 'Rust', version: '1.75', installed: false },
+          { name: 'Go', version: '1.21', installed: false },
+          { name: 'Bun', version: '1.0', installed: true },
+        ],
+        installingDep: null,
+        
+        // Game Control Engine - New Feature
+        gameControls: { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', action: 'Space' },
+        gamepadConnected: false, gamepadState: null,
+        
+        // Settings
+        settings: JSON.parse(localStorage.getItem('nexus_settings') || '{"provider":"auto","theme":"cyber"}'),
+        
+        // Trailer - New Feature
+        showTrailer: false, trailerStep: 0,
+      };
+      
+      let audioElement = null;
+      let gameLoop = null;
+      
+      // Utility Functions
+      const showNotification = (msg, duration = 3000) => {
+        state.notification = msg;
+        render();
+        setTimeout(() => { state.notification = ''; render(); }, duration);
+      };
+      
+      const updateClock = () => {
+        const now = new Date();
+        state.time = now.toLocaleTimeString('en-US', { hour12: false });
+        state.date = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+      };
+      
+      // Online Progress System
+      const startOnlineProgress = (operation, total) => {
+        state.onlineProgress = { active: true, operations: [], total, completed: 0, currentOperation: operation };
+        render();
+      };
+      
+      const updateOnlineProgress = (operation, progress) => {
+        state.onlineProgress.completed = progress;
+        state.onlineProgress.currentOperation = operation;
+        render();
+      };
+      
+      const endOnlineProgress = () => {
+        state.onlineProgress.active = false;
+        render();
+      };
+      
+      // Copilot System
+      const sendCopilotMessage = async () => {
+        if (!state.copilotInput.trim() || state.copilotLoading) return;
+        const userMsg = state.copilotInput;
+        state.copilotInput = '';
+        state.copilotMessages.push({ role: 'user', content: userMsg });
+        state.copilotLoading = true;
+        render();
+        
+        let response = '';
+        const contextPrompts = {
+          game: 'You are a game development expert. Help with game code, graphics, physics, and game design.',
+          ide: 'You are a coding assistant. Help debug code, suggest improvements, and explain concepts.',
+          cli: 'You are a terminal/command line expert. Help with commands, scripts, and system operations.',
+          radio: 'You are a music and radio expert. Help find stations, genres, and music recommendations.',
+          build: 'You are a DevOps expert. Help with builds, deployments, CI/CD, and infrastructure.',
+          general: 'You are a helpful assistant for NEXUS OS users.'
+        };
+        
+        try {
+          if (window.puter?.ai?.chat) {
+            const result = await window.puter.ai.chat([
+              { role: 'system', content: contextPrompts[state.copilotContext] || contextPrompts.general + ' Keep responses concise and helpful.' },
+              ...state.copilotMessages.slice(-8)
+            ], { model: 'gpt-4o-mini' });
+            response = typeof result === 'string' ? result : result.message?.content || String(result);
+          }
+        } catch (e) {
+          response = '🤖 AI is initializing... Please try again.';
+        }
+        
+        if (!response) response = '🤖 Unable to connect. Please try again.';
+        state.copilotMessages.push({ role: 'assistant', content: response });
+        state.copilotLoading = false;
+        render();
+      };
+      
+      // AI Chat
+      const sendAiMessage = async () => {
+        if (!state.aiInput.trim() || state.aiLoading) return;
+        const userMsg = state.aiInput;
+        state.aiInput = '';
+        state.aiMessages.push({ role: 'user', content: userMsg });
+        state.aiLoading = true;
+        render();
+        
+        let response = '';
+        try {
+          if (window.puter?.ai?.chat) {
+            const result = await window.puter.ai.chat([
+              { role: 'system', content: 'You are NEXUS AI V10.5, a helpful cyberpunk-themed assistant.' },
+              ...state.aiMessages.slice(-10)
+            ], { model: 'gpt-4o-mini' });
+            response = typeof result === 'string' ? result : result.message?.content || String(result);
+          }
+        } catch (e) {
+          response = '🤖 AI is initializing...';
+        }
+        
+        state.aiMessages.push({ role: 'assistant', content: response || '🤖 Unable to connect.' });
+        state.aiLoading = false;
+        render();
+      };
+      
+      // Radio Search - Enhanced
+      const searchRadioOnline = async (query, genre) => {
+        state.radioSearching = true;
+        state.radioSearchQuery = query || '';
+        state.radioGenreFilter = genre || '';
+        render();
+        
+        try {
+          const searchTerm = genre || query;
+          const response = await fetch(`https://de1.api.radio-browser.info/json/stations/byname/${encodeURIComponent(searchTerm)}?limit=15&order=clickcount&reverse=true`, {
+            headers: { 'User-Agent': 'NEXUS-OS/10.5' }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            state.radioOnlineResults = data.map(s => ({
+              name: s.name,
+              url: s.url_resolved || s.url,
+              genre: s.tags?.split(',')[0] || genre || 'Various',
+              country: s.country || 'Unknown',
+              favicon: s.favicon,
+              listeners: s.clickcount
+            }));
+            showNotification(`📻 Found ${state.radioOnlineResults.length} stations!`);
+          } else {
+            throw new Error('API unavailable');
+          }
+        } catch (e) {
+          state.radioOnlineResults = state.radioStations.filter(s => 
+            (!query || s.name.toLowerCase().includes(query.toLowerCase())) &&
+            (!genre || s.genre === genre)
+          );
+          showNotification('📻 Using cached stations');
+        }
+        
+        state.radioSearching = false;
+        render();
+      };
+      
+      const searchRadioByGenre = async (genre) => {
+        state.radioSearching = true;
+        state.radioGenreFilter = genre;
+        render();
+        
+        try {
+          const response = await fetch(`https://de1.api.radio-browser.info/json/stations/bytag/${encodeURIComponent(genre)}?limit=15&order=clickcount&reverse=true`, {
+            headers: { 'User-Agent': 'NEXUS-OS/10.5' }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            state.radioOnlineResults = data.map(s => ({
+              name: s.name,
+              url: s.url_resolved || s.url,
+              genre: s.tags?.split(',')[0] || genre,
+              country: s.country || 'Unknown',
+              favicon: s.favicon,
+              listeners: s.clickcount
+            }));
+            showNotification(`📻 Found ${state.radioOnlineResults.length} ${genre} stations!`);
+          }
+        } catch (e) {
+          state.radioOnlineResults = state.radioStations.filter(s => s.genre === genre);
+        }
+        
+        state.radioSearching = false;
+        render();
+      };
+      
+      const playRadio = (station) => {
+        if (!audioElement) audioElement = new Audio();
+        audioElement.src = station.url;
+        audioElement.volume = state.radioVolume / 100;
+        audioElement.play().catch(() => showNotification('⚠️ Could not play station'));
+        state.currentStation = station;
+        state.isPlaying = true;
+        render();
+      };
+      
+      const stopRadio = () => {
+        if (audioElement) { audioElement.pause(); audioElement.src = ''; }
+        state.currentStation = null;
+        state.isPlaying = false;
+        render();
+      };
+      
+      // YouTube
+      const searchYouTube = async () => {
+        if (!state.ytSearch.trim()) return;
+        state.ytSearchLoading = true;
+        render();
+        
+        try {
+          const response = await fetch(`https://inv.nadeko.net/api/v1/search?q=${encodeURIComponent(state.ytSearch)}&type=video`);
+          if (response.ok) {
+            const data = await response.json();
+            state.ytResults = data.slice(0, 8).map(item => ({
+              id: item.videoId, title: item.title, channel: item.author,
+              thumbnail: `https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`,
+              duration: item.lengthSeconds ? `${Math.floor(item.lengthSeconds / 60)}:${(item.lengthSeconds % 60).toString().padStart(2, '0')}` : 'N/A'
+            }));
+          } else throw new Error('API unavailable');
+        } catch (e) {
+          state.ytResults = [
+            { id: 'dQw4w9WgXcQ', title: `${state.ytSearch} - Result 1`, channel: 'YouTube', thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg', duration: '3:32' },
+            { id: 'jNQXAC9IVRw', title: `${state.ytSearch} - Result 2`, channel: 'YouTube', thumbnail: 'https://img.youtube.com/vi/jNQXAC9IVRw/mqdefault.jpg', duration: '0:19' },
+          ];
+        }
+        state.ytSearchLoading = false;
+        showNotification(`🎬 Found ${state.ytResults.length} videos!`);
+        render();
+      };
+      
+      // Build Console - Enhanced
+      const runBuild = async () => {
+        state.buildStatus = 'building';
+        state.buildProgress = 0;
+        state.buildOutput.push(`[${new Date().toLocaleTimeString()}] Starting ${state.buildTarget} build...`);
+        render();
+        
+        const steps = [
+          { progress: 5, msg: '📦 Checking dependencies...' },
+          { progress: 10, msg: '📥 Installing packages...' },
+          { progress: 20, msg: '🔍 Running linter...' },
+          { progress: 30, msg: '📝 Compiling TypeScript...' },
+          { progress: 45, msg: '⚛️ Optimizing React components...' },
+          { progress: 60, msg: '🎨 Processing CSS and assets...' },
+          { progress: 75, msg: '📦 Bundling modules...' },
+          { progress: 85, msg: '🚀 Generating static pages...' },
+          { progress: 95, msg: '✨ Finalizing build...' },
+          { progress: 100, msg: '✅ Build completed successfully!' },
+        ];
+        
+        for (const step of steps) {
+          await new Promise(r => setTimeout(r, 500));
+          state.buildProgress = step.progress;
+          state.buildOutput.push(`[${new Date().toLocaleTimeString()}] ${step.msg}`);
+          render();
+        }
+        
+        state.buildStatus = 'success';
+        showNotification('✅ Build completed!');
+        render();
+      };
+      
+      const deployBuild = async () => {
+        if (state.buildStatus !== 'success') { showNotification('⚠️ Run build first!'); return; }
+        
+        state.buildOutput.push(`[${new Date().toLocaleTimeString()}] 🚀 Deploying to ${state.deployTarget}...`);
+        render();
+        
+        const deploySteps = ['🔐 Authenticating...', '📤 Uploading artifacts...', '⚙️ Configuring environment...', '🌍 Updating CDN...', '✅ Deployment successful!'];
+        for (const step of deploySteps) {
+          await new Promise(r => setTimeout(r, 600));
+          state.buildOutput.push(`[${new Date().toLocaleTimeString()}] ${step}`);
+          render();
+        }
+        showNotification(`🚀 Deployed to ${state.deployTarget}!`);
+        render();
+      };
+      
+      // Compile Console - New Feature
+      const runCompile = async () => {
+        state.compileStatus = 'compiling';
+        state.compileOutput = ['[Compiler] Starting compilation...', `[Compiler] Language: ${state.compileLanguage}`];
+        render();
+        
+        const compileSteps = [
+          '[Lexer] Tokenizing source code...',
+          '[Parser] Building AST...',
+          '[Analyzer] Type checking...',
+          '[Optimizer] Optimizing code...',
+          '[Generator] Generating output...',
+        ];
+        
+        for (const step of compileSteps) {
+          await new Promise(r => setTimeout(r, 400));
+          state.compileOutput.push(step);
+          render();
+        }
+        
+        state.compileOutput.push('[Compiler] ✅ Compilation successful!');
+        state.compileStatus = 'success';
+        showNotification('✅ Code compiled!');
+        render();
+      };
+      
+      // Dependency Installation - New Feature
+      const installDependency = async (depName) => {
+        const dep = state.dependencies.find(d => d.name === depName);
+        if (!dep || dep.installed) return;
+        
+        state.installingDep = depName;
+        render();
+        
+        await new Promise(r => setTimeout(r, 2000));
+        
+        dep.installed = true;
+        state.installingDep = null;
+        showNotification(`✅ ${depName} installed successfully!`);
+        render();
+      };
+      
+      // Terminal - Enhanced
+      const executeCommand = (cmd) => {
+        const commands = {
+          help: () => ['Commands: help, clear, date, whoami, neofetch, echo, ls, pwd, install, build, run, search, radio'],
+          clear: () => { state.terminalHistory = []; return []; },
+          date: () => [new Date().toString()],
+          whoami: () => [state.currentUser?.username || 'guest'],
+          neofetch: () => ['╭───────────────────────╮', '│  NEXUS OS V10.5        │', '│  ─────────────────────│', `│  User: ${state.currentUser?.displayName || 'Guest'}`, '│  Shell: nexus-sh', `│  Resolution: ${window.innerWidth}x${window.innerHeight}`, '│  Theme: Cyberpunk', '╰───────────────────────╯'],
+          echo: (args) => [args.join(' ')],
+          ls: () => ['Documents/  Downloads/  Pictures/  Music/  Videos/  Projects/'],
+          pwd: () => ['/home/' + (state.currentUser?.username || 'guest')],
+          install: (args) => [`Installing ${args[0] || 'package'}...`, '✅ Installation complete!'],
+          build: () => ['Starting build process...', 'Use Build Console for detailed output.'],
+          run: () => ['Executing code...', 'Use IDE for full execution.'],
+          search: (args) => [`Searching for: ${args.join(' ')}`, 'Use Radio or YouTube apps for search.'],
+          radio: (args) => [`Searching radio: ${args.join(' ')}`, 'Use Radio app for full search.'],
+          python: () => ['Python 3.12 - Use "install python" to install.', 'Usage: python <script.py>'],
+          java: () => ['Java 21 - Use "install java" to install.', 'Usage: java <file.java>'],
+          node: () => ['Node.js 20.x ready!', 'Usage: node <script.js>'],
+        };
+        
+        const parts = cmd.trim().split(' ');
+        const command = parts[0].toLowerCase();
+        const args = parts.slice(1);
+        
+        const output = commands[command] ? commands[command](args) : [`Command not found: ${command}. Type "help" for commands.`];
+        state.terminalHistory.push(`nexus@os:~$ ${cmd}`, ...output, '');
+        render();
+      };
+      
+      // IDE
+      const runCode = () => {
+        const iframe = document.getElementById('ide-preview');
+        if (iframe) {
+          let html = state.ideCode;
+          if (!html.includes('<!DOCTYPE') && !html.includes('<html')) {
+            html = `<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui}</style></head><body><script>try{${html}}catch(e){document.body.innerHTML='<div style="color:#ff0055;padding:20px">Error: '+e.message+'</div>'}<\/script></body></html>`;
+          }
+          iframe.srcdoc = html;
+        }
+      };
+      
+      const getIdeAssist = async () => {
+        if (!state.ideCode.trim()) return;
+        state.ideCopilotSuggestion = '🤖 Analyzing code...';
+        render();
+        
+        try {
+          if (window.puter?.ai?.chat) {
+            const result = await window.puter.ai.chat([
+              { role: 'system', content: 'You are a code expert. Analyze the code and provide a brief suggestion or improvement. Be concise.' },
+              { role: 'user', content: `Analyze this code:\n${state.ideCode}` }
+            ], { model: 'gpt-4o-mini' });
+            state.ideCopilotSuggestion = typeof result === 'string' ? result : result.message?.content || '';
+          }
+        } catch (e) {
+          state.ideCopilotSuggestion = '💡 Tip: Click Run to execute your code!';
+        }
+        render();
+      };
+      
+      // Game Engine - Enhanced
+      const startSnakeGame = () => {
+        state.snakePosition = [{x: 5, y: 5}];
+        state.snakeFood = {x: Math.floor(Math.random() * 15), y: Math.floor(Math.random() * 10)};
+        state.snakeDirection = 'right';
+        state.gameScore = 0;
+        state.snakeGameActive = true;
+        render();
+      };
+      
+      // Gamepad Support - New Feature
+      const initGamepad = () => {
+        window.addEventListener('gamepadconnected', (e) => {
+          state.gamepadConnected = true;
+          showNotification(`🎮 Gamepad connected: ${e.gamepad.id}`);
+          render();
+        });
+        window.addEventListener('gamepaddisconnected', () => {
+          state.gamepadConnected = false;
+          showNotification('🎮 Gamepad disconnected');
+          render();
+        });
+      };
+      
+      // Auth
+      const handleLogin = (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const username = form.username.value;
+        const password = form.password.value;
+        
+        const users = {
+          'admin': { password: 'dauptr', displayName: 'Admin', role: 'admin', isPremium: true },
+          'nexus': { password: 'nexus123', displayName: 'Nexus', role: 'user', isPremium: true },
+          'user': { password: 'user123', displayName: 'User', role: 'user', isPremium: false }
+        };
+        
+        if (users[username]?.password === password) {
+          state.currentUser = { id: username, username, ...users[username] };
+          state.phase = 'desktop';
+          showNotification(`👋 Welcome, ${users[username].displayName}!`);
+        } else if (username) {
+          state.currentUser = { id: username, username, displayName: username, role: 'user', isPremium: false };
+          state.phase = 'desktop';
+          showNotification(`👋 Welcome, ${username}!`);
+        } else {
+          state.loginError = 'Invalid credentials';
+        }
+        render();
+      };
+      
+      const guestLogin = () => {
+        state.currentUser = { id: 'guest', username: 'guest', displayName: 'Guest', role: 'guest', isPremium: false };
+        state.phase = 'desktop';
+        showNotification('👋 Welcome, Guest!');
+        render();
+      };
+      
+      const logout = () => {
+        state.currentUser = null;
+        state.phase = 'login';
+        state.activeApp = null;
+        render();
+      };
+      
+      // Apps list
+      const apps = [
+        { id: 'ai-chat', name: 'AI Chat', color: '#00f0ff', icon: '🤖', desc: 'Multi-provider AI' },
+        { id: 'youtube', name: 'YouTube', color: '#ff0000', icon: '▶️', desc: 'Video player' },
+        { id: 'build-console', name: 'Build', color: '#00ffaa', icon: '🔧', desc: 'Build & Deploy' },
+        { id: 'compile-console', name: 'Compile', color: '#ff6600', icon: '⚙️', desc: 'Code Compiler' },
+        { id: 'dependencies', name: 'Tools', color: '#8b00ff', icon: '📦', desc: 'Dependencies' },
+        { id: 'radio', name: 'Radio', color: '#ffcc00', icon: '📻', desc: 'Online stations' },
+        { id: 'terminal', name: 'Terminal', color: '#00ff00', icon: '⌨️', desc: 'Command line' },
+        { id: 'ide', name: 'IDE', color: '#ff00aa', icon: '💻', desc: 'Code playground' },
+        { id: 'art-studio', name: 'Art', color: '#ff00aa', icon: '🎨', desc: 'AI image gen' },
+        { id: 'games', name: 'Games', color: '#ff6600', icon: '🎮', desc: 'Mini games' },
+        { id: 'trailer', name: 'Trailer', color: '#00f0ff', icon: '🎬', desc: 'App showcase' },
+        { id: 'settings', name: 'Settings', color: '#888', icon: '⚙️', desc: 'Configuration' },
+      ];
+      
+      // Render function
+      const render = () => {
+        const app = document.getElementById('app');
+        const inputStyle = `width:100%;padding:12px 14px;background:rgba(10,15,25,0.8);border:1px solid rgba(0,240,255,0.25);border-radius:8;color:#fff;font-size:14px;margin-bottom:10px`;
+        const buttonStyle = `padding:12px 24px;background:linear-gradient(135deg, #00f0ff, #00a0ff);border:none;border-radius:8;color:#000;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:600;cursor:pointer`;
+        
+        // Boot Screen
+        if (state.phase === 'boot') {
+          app.innerHTML = `<div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px">
+            <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+              <div style="position:absolute;width:600px;height:600px;top:-200px;right:-200px;background:radial-gradient(circle, rgba(0,240,255,0.15) 0%, transparent 70%);animation:pulse 4s ease-in-out infinite"></div>
+              <div style="position:absolute;width:500px;height:500px;bottom:-150px;left:-150px;background:radial-gradient(circle, rgba(139,0,255,0.15) 0%, transparent 70%);animation:pulse 4s ease-in-out infinite 2s"></div>
+            </div>
+            <div style="position:relative;z-index:10;text-align:center">
+              <div style="font-size:${state.isMobile ? '36px' : '56px'};font-weight:900;font-family:'Orbitron',sans-serif;margin-bottom:10px;background:linear-gradient(135deg, #00f0ff, #8b00ff, #ff00aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEXUS.OS</div>
+              <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:#607090;margin-bottom:40px;letter-spacing:4px">SENTIENT OPERATING SYSTEM V10.5</div>
+              <div style="width:${state.isMobile ? '280px' : '400px'};height:4px;background:rgba(0,240,255,0.1);border-radius:2px;overflow:hidden;margin-bottom:20px">
+                <div style="width:${state.bootProgress}%;height:100%;background:linear-gradient(90deg, #00f0ff, #8b00ff, #ff00aa);transition:width 0.3s"></div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:${state.isMobile ? '12px' : '13px'};color:#00f0ff">${state.bootText}</div>
+            </div>
+          </div>`;
+          return;
+        }
+        
+        // Login Screen
+        if (state.phase === 'login') {
+          app.innerHTML = `<div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:${state.isMobile ? '15px' : '0'}">
+            <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+              <div style="position:absolute;width:400px;height:400px;top:-100px;right:-100px;background:radial-gradient(circle, rgba(0,240,255,0.2) 0%, transparent 70%)"></div>
+              <div style="position:absolute;width:300px;height:300px;bottom:-50px;left:-50px;background:radial-gradient(circle, rgba(255,0,170,0.2) 0%, transparent 70%)"></div>
+            </div>
+            <div style="width:${state.isMobile ? '100%' : '420px'};max-width:100%;background:rgba(0,5,15,0.95);border:1px solid rgba(0,240,255,0.2);border-radius:16px;padding:24px;backdrop-filter:blur(20px);position:relative;z-index:10">
+              <div style="text-align:center;margin-bottom:25px">
+                <div style="font-size:${state.isMobile ? '28px' : '36px'};font-weight:900;font-family:'Orbitron',sans-serif;background:linear-gradient(135deg, #00f0ff, #8b00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEXUS.OS</div>
+                <div style="font-size:11px;color:#607090;margin-top:5px;letter-spacing:2px">SENTIENT OPERATING SYSTEM V10.5</div>
+              </div>
+              ${state.loginError ? `<div style="background:rgba(255,0,85,0.15);border:1px solid #ff0055;border-radius:8px;padding:10px;font-size:12px;color:#ff0055;text-align:center;margin-bottom:15px">${state.loginError}</div>` : ''}
+              <div style="display:flex;gap:6px;margin-bottom:20px">
+                <div onclick="NEXUS_OS.setState('loginMode','login')" style="flex:1;padding:12px;background:${state.loginMode === 'login' ? 'rgba(0,240,255,0.15)' : 'transparent'};border:1px solid ${state.loginMode === 'login' ? '#00f0ff' : 'rgba(0,240,255,0.2)'};border-radius:8;color:${state.loginMode === 'login' ? '#00f0ff' : '#607090'};font-family:'Orbitron',sans-serif;font-size:11px;cursor:pointer;text-align:center">LOGIN</div>
+                <div onclick="NEXUS_OS.setState('loginMode','register')" style="flex:1;padding:12px;background:${state.loginMode === 'register' ? 'rgba(0,240,255,0.15)' : 'transparent'};border:1px solid ${state.loginMode === 'register' ? '#00f0ff' : 'rgba(0,240,255,0.2)'};border-radius:8;color:${state.loginMode === 'register' ? '#00f0ff' : '#607090'};font-family:'Orbitron',sans-serif;font-size:11px;cursor:pointer;text-align:center">REGISTER</div>
+              </div>
+              <form onsubmit="NEXUS_OS.handleLogin(event)">
+                <input name="username" type="text" placeholder="👤 Username" required style="${inputStyle};font-size:${state.isMobile ? '16px' : '14px'}">
+                <input name="password" type="password" placeholder="🔑 Password" style="${inputStyle};font-size:${state.isMobile ? '16px' : '14px'}">
+                ${state.loginMode === 'register' ? '<input name="email" type="email" placeholder="📧 Email" style="${inputStyle}">' : ''}
+                <button type="submit" style="width:100%;padding:14px;background:linear-gradient(135deg, #00f0ff, #00a0ff);border:none;border-radius:8;color:#000;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:600;cursor:pointer">⚡ ACCESS SYSTEM</button>
+              </form>
+              <div style="display:flex;align-items:center;gap:12px;margin:20px 0;color:#405060;font-size:10px">
+                <div style="flex:1;height:1px;background:rgba(0,240,255,0.1)"></div><span>or</span><div style="flex:1;height:1px;background:rgba(0,240,255,0.1)"></div>
+              </div>
+              <button onclick="NEXUS_OS.guestLogin()" style="width:100%;padding:12px;background:transparent;border:1px solid rgba(0,240,255,0.2);border-radius:8;color:#fff;font-size:14px;cursor:pointer">🧑 Guest User</button>
+            </div>
+          </div>`;
+          return;
+        }
+        
+        // Desktop
+        app.innerHTML = `
+          <div style="position:fixed;inset:0;background:linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%);display:flex;flex-direction:column;font-family:'Rajdhani',sans-serif;color:#c0c8d8">
+            <!-- Header -->
+            <div style="padding:8px 15px;background:rgba(0,5,15,0.9);border-bottom:1px solid rgba(0,240,255,0.2);display:flex;justify-content:space-between;align-items:center">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-family:'Orbitron',sans-serif;font-size:14px;background:linear-gradient(135deg,#00f0ff,#8b00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NEXUS.OS V10.5</span>
+                <span style="font-size:11px;color:#607090">${state.time}</span>
+                ${state.gamepadConnected ? '<span style="color:#00ff88">🎮</span>' : ''}
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                ${state.onlineProgress.active ? `<div style="font-size:10px;color:#ffcc00">⏳ ${state.onlineProgress.currentOperation || 'Processing...'}</div>` : ''}
+                <span style="font-size:11px;color:#8090a0">${state.currentUser?.displayName || 'Guest'}</span>
+                <div onclick="NEXUS_OS.logout()" style="padding:4px 10px;background:rgba(255,0,85,0.2);border:1px solid #ff0055;border-radius:6;color:#ff0055;font-size:10px;cursor:pointer">Logout</div>
+              </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div style="flex:1;display:flex;overflow:hidden">
+              <div style="flex:1;padding:15px;overflow-y:auto">
+                ${!state.activeApp ? `
+                  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px">
+                    ${apps.map(app => `
+                      <div onclick="NEXUS_OS.openApp('${app.id}')" style="background:rgba(0,5,15,0.6);border:1px solid rgba(0,240,255,0.15);border-radius:12px;padding:15px;text-align:center;cursor:pointer;transition:all 0.2s" 
+                        onmouseenter="this.style.background='rgba(0,240,255,0.1)';this.style.borderColor='${app.color}'"
+                        onmouseleave="this.style.background='rgba(0,5,15,0.6)';this.style.borderColor='rgba(0,240,255,0.15)'">
+                        <div style="font-size:28px;margin-bottom:8px">${app.icon}</div>
+                        <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:#fff">${app.name}</div>
+                        <div style="font-size:9px;color:#607090;margin-top:4px">${app.desc}</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : `
+                  <div style="background:rgba(0,5,15,0.95);border:1px solid rgba(0,240,255,0.2);border-radius:16px;height:calc(100vh - 120px);display:flex;flex-direction:column;overflow:hidden">
+                    <div style="padding:10px 15px;background:rgba(0,5,15,0.5);border-bottom:1px solid rgba(0,240,255,0.1);display:flex;justify-content:space-between;align-items:center">
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <span style="font-size:18px">${apps.find(a => a.id === state.activeApp)?.icon}</span>
+                        <span style="font-family:'Orbitron',sans-serif;font-size:12px;color:#fff">${apps.find(a => a.id === state.activeApp)?.name}</span>
+                      </div>
+                      <div onclick="NEXUS_OS.closeApp()" style="width:24px;height:24px;background:rgba(255,0,85,0.2);border-radius:4;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px">✕</div>
+                    </div>
+                    <div style="flex:1;overflow:auto;padding:15px">${getAppContent(state.activeApp)}</div>
+                  </div>
+                `}
+              </div>
+            </div>
+            
+            <!-- Status Bar -->
+            <div style="padding:6px 15px;background:rgba(0,5,15,0.9);border-top:1px solid rgba(0,240,255,0.2);display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#607090">
+              <div style="display:flex;gap:15px"><span>🟢 System Online</span><span>${state.date}</span></div>
+              <div style="display:flex;gap:15px">
+                ${state.isPlaying ? `<span style="color:#ffcc00">📻 ${state.currentStation?.name}</span>` : ''}
+                ${state.dependencies.filter(d => d.installed).length > 0 ? `<span style="color:#00ff88">📦 ${state.dependencies.filter(d => d.installed).length} tools</span>` : ''}
+              </div>
+            </div>
+            
+            ${state.notification ? `<div style="position:fixed;top:60px;left:50%;transform:translateX(-50%);background:rgba(0,5,15,0.95);border:1px solid rgba(0,240,255,0.3);border-radius:10px;padding:12px 20px;z-index:6000;font-size:13px;color:#fff">${state.notification}</div>` : ''}
+          </div>
+          
+          <!-- Copilot Button -->
+          ${!state.copilotOpen ? `
+            <div class="copilot-btn" onclick="NEXUS_OS.setState('copilotOpen',true)">
+              <span style="font-size:28px">🤖</span>
+              <div style="position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#00ff88;border:2px solid rgba(0,5,15,0.9)"></div>
+            </div>
+          ` : `
+            <div class="copilot-panel">
+              <div style="padding:12px 16px;background:linear-gradient(180deg, rgba(139,0,255,0.2), transparent);border-bottom:1px solid rgba(139,0,255,0.2);display:flex;justify-content:space-between;align-items:center">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg, #8b00ff, #ff00aa);display:flex;align-items:center;justify-content:center">🤖</div>
+                  <div>
+                    <div style="font-family:'Orbitron',sans-serif;font-size:12px;color:#fff">AI Copilot</div>
+                    <div style="font-size:9px;color:#607090">Context: ${state.copilotContext}</div>
+                  </div>
+                </div>
+                <div onclick="NEXUS_OS.setState('copilotOpen',false)" style="cursor:pointer;color:#ff0055;font-size:18px">✕</div>
+              </div>
+              <div style="flex:1;overflow-y:auto;padding:12px">
+                ${state.copilotMessages.slice(-10).map(m => `
+                  <div style="margin-bottom:10px">
+                    <div style="font-size:10px;color:${m.role === 'user' ? '#8b00ff' : '#00f0ff'};margin-bottom:4px">${m.role === 'user' ? '👤 You' : '🤖 Copilot'}</div>
+                    <div style="background:rgba(0,5,15,0.5);border-radius:8px;padding:10px;font-size:12px;color:#c0c8d8;white-space:pre-wrap">${m.content}</div>
+                  </div>
+                `).join('')}
+                ${state.copilotLoading ? '<div style="text-align:center;color:#607090"><span style="animation:spin 1s linear infinite;display:inline-block">⏳</span> Thinking...</div>' : ''}
+              </div>
+              <div style="padding:12px;border-top:1px solid rgba(139,0,255,0.2)">
+                <select onchange="NEXUS_OS.setState('copilotContext',this.value)" style="width:100%;margin-bottom:8px;background:#0a0f18;border:1px solid rgba(139,0,255,0.3);border-radius:6;padding:8px;color:#fff;font-size:11px">
+                  <option value="general" ${state.copilotContext === 'general' ? 'selected' : ''}>🌐 General</option>
+                  <option value="game" ${state.copilotContext === 'game' ? 'selected' : ''}>🎮 Game Dev</option>
+                  <option value="ide" ${state.copilotContext === 'ide' ? 'selected' : ''}>💻 IDE</option>
+                  <option value="cli" ${state.copilotContext === 'cli' ? 'selected' : ''}>⌨️ Terminal</option>
+                  <option value="radio" ${state.copilotContext === 'radio' ? 'selected' : ''}>📻 Radio</option>
+                  <option value="build" ${state.copilotContext === 'build' ? 'selected' : ''}>🔧 Build</option>
+                </select>
+                <div style="display:flex;gap:8px">
+                  <input value="${state.copilotInput}" oninput="NEXUS_OS.setState('copilotInput',this.value)" onkeydown="if(event.key==='Enter')NEXUS_OS.sendCopilotMessage()" placeholder="Ask Copilot..." style="flex:1;padding:10px;background:rgba(10,15,25,0.8);border:1px solid rgba(139,0,255,0.3);border-radius:8;color:#fff;font-size:13px;outline:none">
+                  <button onclick="NEXUS_OS.sendCopilotMessage()" style="padding:10px 14px;background:linear-gradient(135deg, #8b00ff, #ff00aa);border:none;border-radius:8;color:#fff;cursor:pointer">📤</button>
+                </div>
+              </div>
+            </div>
+          `}
+        `;
+      };
+      
+      const getAppContent = (appId) => {
+        const inputStyle = `width:100%;padding:12px 14px;background:rgba(10,15,25,0.8);border:1px solid rgba(0,240,255,0.25);border-radius:8;color:#fff;font-size:14px;margin-bottom:10px`;
+        const buttonStyle = `padding:12px 24px;background:linear-gradient(135deg, #00f0ff, #00a0ff);border:none;border-radius:8;color:#000;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:600;cursor:pointer`;
+        
+        switch(appId) {
+          case 'ai-chat':
+            return `<div style="display:flex;flex-direction:column;height:100%;gap:10px">
+              <div style="flex:1;overflow-y:auto;background:rgba(0,0,0,0.3);border-radius:8;padding:12px">
+                ${state.aiMessages.map(m => `<div style="margin-bottom:12px;display:flex;gap:10px"><div style="width:28px;height:28px;border-radius:50%;background:${m.role === 'user' ? 'linear-gradient(135deg,#8b00ff,#ff00aa)' : 'linear-gradient(135deg,#00f0ff,#00a0ff)'};display:flex;align-items:center;justify-content:center;font-size:14px">${m.role === 'user' ? '👤' : '🤖'}</div><div style="flex:1;background:rgba(0,5,15,0.5);border-radius:8;padding:10px;font-size:13px;color:${m.role === 'user' ? '#fff' : '#00f0ff'}">${m.content}</div></div>`).join('')}
+                ${state.aiLoading ? '<div style="text-align:center;color:#607090"><span style="animation:spin 1s linear infinite;display:inline-block">⏳</span> Thinking...</div>' : ''}
+              </div>
+              <div style="display:flex;gap:8px">
+                <input value="${state.aiInput}" oninput="NEXUS_OS.setState('aiInput',this.value)" onkeydown="if(event.key==='Enter')NEXUS_OS.sendAiMessage()" placeholder="Ask NEXUS AI..." style="${inputStyle};margin-bottom:0;flex:1">
+                <button onclick="NEXUS_OS.sendAiMessage()" style="${buttonStyle};padding:10px 16px">Send</button>
+              </div>
+            </div>`;
+            
+          case 'radio':
+            return `<div style="height:100%;overflow-y:auto">
+              <div style="margin-bottom:15px">
+                <div style="display:flex;gap:8px;margin-bottom:10px">
+                  <input value="${state.radioSearchQuery}" oninput="NEXUS_OS.setState('radioSearchQuery',this.value)" onkeydown="if(event.key==='Enter')NEXUS_OS.searchRadioOnline('${state.radioSearchQuery}',null)" placeholder="🔍 Search stations..." style="${inputStyle};margin-bottom:0;flex:1">
+                  <button onclick="NEXUS_OS.searchRadioOnline('${state.radioSearchQuery}',null)" ${state.radioSearching ? 'disabled' : ''} style="${buttonStyle};padding:10px 16px">${state.radioSearching ? '⏳' : 'Search'}</button>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  ${state.radioGenres.map(g => `<div onclick="NEXUS_OS.searchRadioByGenre('${g}')" style="padding:6px 12px;background:${state.radioGenreFilter === g ? 'rgba(255,204,0,0.2)' : 'rgba(0,5,15,0.6)'};border:1px solid ${state.radioGenreFilter === g ? '#ffcc00' : 'rgba(0,240,255,0.2)'};border-radius:20px;font-size:10px;color:${state.radioGenreFilter === g ? '#ffcc00' : '#8090a0'};cursor:pointer">${g}</div>`).join('')}
+                </div>
+              </div>
+              ${state.currentStation ? `<div style="background:linear-gradient(135deg, rgba(255,204,0,0.15), rgba(255,100,0,0.1));border-radius:12px;padding:15px;margin-bottom:15px;border:1px solid rgba(255,204,0,0.4)">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                  <div><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:#ffcc00">📻 ${state.currentStation.name}</div><div style="font-size:11px;color:#8090a0">${state.currentStation.genre} · ${state.currentStation.country}</div></div>
+                  <div onclick="${state.isPlaying ? 'NEXUS_OS.stopRadio()' : `NEXUS_OS.playRadio(${JSON.stringify(state.currentStation)})`}" style="width:50px;height:50px;border-radius:50%;background:${state.isPlaying ? 'linear-gradient(135deg, #ff0055, #cc0044)' : 'linear-gradient(135deg, #00ff88, #00cc66)'};display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px">${state.isPlaying ? '⏸' : '▶'}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px"><span>🔈</span><input type="range" min="0" max="100" value="${state.radioVolume}" onchange="NEXUS_OS.setState('radioVolume',parseInt(this.value))" style="flex:1;accent-color:#ffcc00"><span>🔊</span><span style="color:#ffcc00;font-size:11px">${state.radioVolume}%</span></div>
+              </div>` : ''}
+              <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:#00f0ff;margin-bottom:10px">🎵 ${state.radioOnlineResults.length > 0 ? 'Search Results' : 'Available Stations'} (${state.radioOnlineResults.length || state.radioStations.length})</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
+                ${(state.radioOnlineResults.length > 0 ? state.radioOnlineResults : state.radioStations).map(s => `<div onclick="NEXUS_OS.playRadio(${JSON.stringify(s)})" style="padding:12px;background:${state.currentStation?.name === s.name ? 'rgba(255,204,0,0.15)' : 'rgba(0,5,15,0.6)'};border:1px solid ${state.currentStation?.name === s.name ? '#ffcc00' : 'rgba(0,240,255,0.15)'};border-radius:10px;cursor:pointer">
+                  <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:#fff;margin-bottom:4px">📻 ${s.name}</div>
+                  <div style="font-size:10px;color:#607090">${s.genre} · ${s.country}</div>
+                  ${s.listeners ? `<div style="font-size:9px;color:#405060;margin-top:4px">👥 ${s.listeners.toLocaleString()}</div>` : ''}
+                </div>`).join('')}
+              </div>
+            </div>`;
+            
+          case 'build-console':
+            return `<div style="display:flex;flex-direction:column;height:100%;gap:10px">
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <select onchange="NEXUS_OS.setState('buildTarget',this.value)" style="background:#0a0f18;border:1px solid rgba(0,240,255,0.2);border-radius:6;padding:8px 12px;color:#fff;font-size:11px">
+                  <option value="production" ${state.buildTarget === 'production' ? 'selected' : ''}>🚀 Production</option>
+                  <option value="staging" ${state.buildTarget === 'staging' ? 'selected' : ''}>🔧 Staging</option>
+                  <option value="development" ${state.buildTarget === 'development' ? 'selected' : ''}>💻 Development</option>
+                </select>
+                <input value="${state.deployTarget}" oninput="NEXUS_OS.setState('deployTarget',this.value)" placeholder="Deploy target..." style="${inputStyle};margin-bottom:0;flex:1;min-width:120px">
+                <button onclick="NEXUS_OS.runBuild()" ${state.buildStatus === 'building' ? 'disabled' : ''} style="${buttonStyle};padding:8px 16px;background:${state.buildStatus === 'building' ? '#405060' : 'linear-gradient(135deg, #00ffaa, #00aaff)'}">${state.buildStatus === 'building' ? '⏳ Building...' : '🔧 Build'}</button>
+                <button onclick="NEXUS_OS.deployBuild()" ${state.buildStatus !== 'success' ? 'disabled' : ''} style="padding:8px 16px;background:${state.buildStatus === 'success' ? 'linear-gradient(135deg, #8b00ff, #ff00aa)' : '#405060'};border:none;border-radius:6;color:#fff;font-family:'Orbitron',sans-serif;font-size:10px;cursor:${state.buildStatus === 'success' ? 'pointer' : 'not-allowed'}">🚀 Deploy</button>
+              </div>
+              ${state.buildStatus === 'building' ? `<div><div style="display:flex;justify-content:space-between;font-size:10px;color:#607090;margin-bottom:4px"><span>Building...</span><span>${state.buildProgress}%</span></div><div style="height:6px;background:rgba(0,255,170,0.1);border-radius:3;overflow:hidden"><div style="width:${state.buildProgress}%;height:100%;background:linear-gradient(90deg, #00ffaa, #00aaff);transition:width 0.3s"></div></div></div>` : ''}
+              ${state.buildStatus !== 'idle' ? `<span style="padding:4px 12px;border-radius:20;font-size:10px;font-family:'Orbitron',sans-serif;background:${state.buildStatus === 'building' ? 'rgba(255,204,0,0.2)' : 'rgba(0,255,136,0.2)'};color:${state.buildStatus === 'building' ? '#ffcc00' : '#00ff88'}">${state.buildStatus === 'building' ? '⏳ BUILDING' : '✅ SUCCESS'}</span>` : ''}
+              <div style="flex:1;background:#000;border-radius:8;overflow:hidden;border:1px solid rgba(0,255,170,0.2)">
+                <div style="padding:8px 12px;background:rgba(0,10,20,0.8);border-bottom:1px solid rgba(0,255,170,0.1);display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:#ff5f56"></div><div style="width:10px;height:10px;border-radius:50%;background:#ffbd2e"></div><div style="width:10px;height:10px;border-radius:50%;background:#27ca40"></div><span style="margin-left:8px;font-size:10px;color:#607090;font-family:'Orbitron',sans-serif">BUILD OUTPUT</span></div>
+                <div style="height:calc(100% - 36px);overflow:auto;padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px">
+                  ${state.buildOutput.map(l => `<div style="color:${l.includes('✅') ? '#00ff88' : l.includes('📦') ? '#00f0ff' : '#00ffaa'};white-space:pre-wrap;margin-bottom:2px">${l}</div>`).join('')}
+                  ${state.buildStatus === 'building' ? '<div style="color:#00ffaa;animation:pulse 1s infinite">▊</div>' : ''}
+                </div>
+              </div>
+            </div>`;
+            
+          case 'compile-console':
+            return `<div style="display:flex;flex-direction:column;height:100%;gap:10px">
+              <div style="display:flex;gap:8px">
+                <select onchange="NEXUS_OS.setState('compileLanguage',this.value)" style="background:#0a0f18;border:1px solid rgba(0,240,255,0.2);border-radius:6;padding:8px 12px;color:#fff;font-size:11px">
+                  <option value="javascript">JavaScript</option>
+                  <option value="typescript">TypeScript</option>
+                  <option value="python">Python</option>
+                  <option value="java">Java</option>
+                  <option value="rust">Rust</option>
+                </select>
+                <button onclick="NEXUS_OS.runCompile()" style="${buttonStyle};padding:8px 16px">⚙️ Compile</button>
+              </div>
+              <div style="flex:1;background:#000;border-radius:8;overflow:hidden;border:1px solid rgba(255,102,0,0.2)">
+                <div style="padding:8px 12px;background:rgba(0,10,20,0.8);border-bottom:1px solid rgba(255,102,0,0.1)"><span style="font-size:10px;color:#ff6600;font-family:'Orbitron',sans-serif">⚙️ COMPILER OUTPUT</span></div>
+                <div style="height:calc(100% - 36px);overflow:auto;padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px">
+                  ${state.compileOutput.length > 0 ? state.compileOutput.map(l => `<div style="color:${l.includes('✅') ? '#00ff88' : l.includes('Error') ? '#ff0055' : '#ffcc00'};margin-bottom:2px">${l}</div>`).join('') : '<div style="color:#607090">Select a language and click Compile...</div>'}
+                </div>
+              </div>
+            </div>`;
+            
+          case 'dependencies':
+            return `<div style="height:100%;overflow-y:auto">
+              <div style="font-family:'Orbitron',sans-serif;font-size:12px;color:#8b00ff;margin-bottom:15px">📦 Dependency Manager</div>
+              <div style="display:grid;gap:10px">
+                ${state.dependencies.map(d => `<div style="padding:15px;background:rgba(0,5,15,0.6);border:1px solid rgba(0,240,255,0.15);border-radius:10px;display:flex;justify-content:space-between;align-items:center">
+                  <div><div style="color:#fff;font-size:14px">${d.name}</div><div style="font-size:11px;color:#607090">v${d.version}</div></div>
+                  ${d.installed ? '<span style="padding:4px 12px;background:rgba(0,255,136,0.2);border-radius:6;color:#00ff88;font-size:10px">✓ Installed</span>' : state.installingDep === d.name ? '<span style="padding:4px 12px;background:rgba(255,204,0,0.2);border-radius:6;color:#ffcc00;font-size:10px">⏳ Installing...</span>' : `<button onclick="NEXUS_OS.installDependency('${d.name}')" style="padding:6px 12px;background:linear-gradient(135deg, #8b00ff, #ff00aa);border:none;border-radius:6;color:#fff;font-size:10px;cursor:pointer">Install</button>`}
+                </div>`).join('')}
+              </div>
+            </div>`;
+            
+          case 'ide':
+            return `<div style="display:flex;flex-direction:column;height:100%;gap:10px">
+              <div style="display:flex;gap:8px">
+                <button onclick="NEXUS_OS.runCode()" style="${buttonStyle}">▶ Run</button>
+                <button onclick="NEXUS_OS.getIdeAssist()" style="padding:8px 16px;background:linear-gradient(135deg, #8b00ff, #ff00aa);border:none;border-radius:8;color:#fff;font-family:'Orbitron',sans-serif;font-size:10px;cursor:pointer">🤖 AI Assist</button>
+              </div>
+              ${state.ideCopilotSuggestion ? `<div style="background:rgba(139,0,255,0.1);border:1px solid rgba(139,0,255,0.3);border-radius:8;padding:10px;font-size:11px;color:#c0c8d8"><div style="font-size:10px;color:#8b00ff;margin-bottom:4px">🤖 AI Suggestion:</div>${state.ideCopilotSuggestion}</div>` : ''}
+              <div style="display:flex;flex:1;gap:10px;flex-direction:${state.isMobile ? 'column' : 'row'}">
+                <textarea value="${state.ideCode.replace(/"/g, '&quot;')}" oninput="NEXUS_OS.setState('ideCode',this.value)" style="flex:1;min-height:150px;background:#0a0f18;border:1px solid rgba(0,240,255,0.2);border-radius:8;padding:12px;color:#00ff88;font-family:'JetBrains Mono',monospace;font-size:12px;resize:none;outline:none">${state.ideCode}</textarea>
+                <iframe id="ide-preview" style="flex:1;min-height:150px;background:#fff;border:none;border-radius:8"></iframe>
+              </div>
+            </div>`;
+            
+          case 'terminal':
+            return `<div style="display:flex;flex-direction:column;height:100%;background:#000;border-radius:8;overflow:hidden">
+              <div style="flex:1;overflow-y:auto;padding:12px;font-family:'JetBrains Mono',monospace;font-size:12px">
+                ${state.terminalHistory.map(l => `<div style="color:${l.startsWith('nexus@') ? '#00f0ff' : '#00ff88'};white-space:pre-wrap;margin-bottom:2px">${l}</div>`).join('')}
+              </div>
+              <div style="display:flex;padding:10px;border-top:1px solid rgba(0,240,255,0.1);align-items:center;gap:8px">
+                <span style="color:#00f0ff;font-family:'JetBrains Mono',monospace">nexus@os:~$</span>
+                <input value="${state.terminalInput}" oninput="NEXUS_OS.setState('terminalInput',this.value)" onkeydown="if(event.key==='Enter'){NEXUS_OS.executeCommand(terminalInput);NEXUS_OS.setState('terminalInput','')}" id="terminal-input" style="flex:1;background:transparent;border:none;color:#00ff88;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none" autofocus>
+              </div>
+            </div>`;
+            
+          case 'games':
+            return `<div style="text-align:center;height:100%;overflow-y:auto">
+              <div style="margin-bottom:10px;display:flex;justify-content:center;gap:20px">
+                <span style="font-family:'Orbitron',sans-serif;color:#00ff88">Score: ${state.gameScore}</span>
+                <span style="font-family:'Orbitron',sans-serif;color:#ffcc00">High: ${state.gameHighScore}</span>
+              </div>
+              <div style="display:inline-grid;grid-template-columns:repeat(15,15px);gap:1px;background:rgba(0,5,15,0.8);padding:10px;border-radius:8px;border:1px solid rgba(0,240,255,0.2)">
+                ${[...Array(150)].map((_, i) => { const x = i % 15, y = Math.floor(i / 15); const isSnake = state.snakePosition.some(s => s.x === x && s.y === y); const isFood = state.snakeFood.x === x && state.snakeFood.y === y; return `<div style="width:15px;height:15px;background:${isSnake ? '#00ff88' : isFood ? '#ff0055' : 'transparent'};border-radius:2px"></div>`; }).join('')}
+              </div>
+              <div style="margin-top:15px">
+                ${!state.snakeGameActive ? `<button onclick="NEXUS_OS.startSnakeGame()" style="${buttonStyle};background:linear-gradient(135deg, #ff6600, #ff0055)">🎮 Start Game</button>` : `<div style="color:#607090;font-size:11px">Use arrow keys to move</div>`}
+              </div>
+              ${state.gamepadConnected ? '<div style="margin-top:15px;color:#00ff88;font-size:11px">🎮 Gamepad Connected!</div>' : ''}
+            </div>`;
+            
+          case 'youtube':
+            return `<div style="display:flex;flex-direction:column;height:100%;gap:10px">
+              <div style="display:flex;gap:8px">
+                <input value="${state.ytSearch}" oninput="NEXUS_OS.setState('ytSearch',this.value)" onkeydown="if(event.key==='Enter')NEXUS_OS.searchYouTube()" placeholder="🔍 Search YouTube..." style="${inputStyle};margin-bottom:0;flex:1">
+                <button onclick="NEXUS_OS.searchYouTube()" style="${buttonStyle};padding:10px 16px;background:#ff0000">${state.ytSearchLoading ? '⏳' : 'Search'}</button>
+              </div>
+              ${state.ytCurrentVideo ? `<div style="position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:8;overflow:hidden"><iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" src="https://www.youtube.com/embed/${state.ytCurrentVideo.id}?autoplay=1" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div><div style="display:flex;justify-content:space-between;align-items:center"><span style="color:#fff;font-size:12px;max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${state.ytCurrentVideo.title}</span><button onclick="NEXUS_OS.setState('ytCurrentVideo',null)" style="padding:6px 12px;background:rgba(255,0,0,0.2);border:1px solid #ff0000;border-radius:6;color:#ff0000;font-size:10px;cursor:pointer">✕ Close</button></div>` : ''}
+              <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">${state.ytResults.map(v => `<div onclick="NEXUS_OS.setState('ytCurrentVideo',{id:'${v.id}',title:'${v.title.replace(/'/g, "\\'")}'})" style="background:rgba(0,5,15,0.6);border:1px solid rgba(0,240,255,0.15);border-radius:10;overflow:hidden;cursor:pointer"><div style="position:relative;width:100%;padding-top:56.25%"><img src="${v.thumbnail}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover"><span style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.8);padding:2px 6px;border-radius:4;font-size:9px;color:#fff">${v.duration}</span></div><div style="padding:8px"><div style="color:#fff;font-size:11px;max-height:32px;overflow:hidden">${v.title}</div></div></div>`).join('')}</div>
+            </div>`;
+            
+          case 'art-studio':
+            return `<div style="display:flex;flex-direction:column;height:100%;gap:10px">
+              <textarea value="${state.artPrompt}" oninput="NEXUS_OS.setState('artPrompt',this.value)" placeholder="Describe your image..." style="background:rgba(10,15,25,0.8);border:1px solid rgba(0,240,255,0.2);border-radius:8;padding:12px;color:#fff;font-size:14px;outline:none;resize:none;height:70px">${state.artPrompt}</textarea>
+              <button onclick="NEXUS_OS.generateArt()" ${state.artLoading || !state.artPrompt.trim() ? 'disabled' : ''} style="padding:14px 20px;background:${state.artLoading ? 'rgba(255,0,170,0.2)' : 'linear-gradient(135deg, #ff00aa, #8b00ff)'};border:none;border-radius:8;color:#fff;font-family:'Orbitron',sans-serif;font-size:13px;cursor:${state.artLoading || !state.artPrompt.trim() ? 'not-allowed' : 'pointer'}">${state.artLoading ? '<span style="animation:spin 1s linear infinite;display:inline-block">⏳</span> Generating...' : '🎨 Generate Image'}</button>
+              <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px">${state.artImages.map(img => `<div style="aspect-ratio:1;border-radius:10px;overflow:hidden;border:2px solid rgba(255,0,170,0.3);cursor:pointer" onclick="window.open('${img.url}')"><img src="${img.url}" style="width:100%;height:100%;object-fit:cover"></div>`).join('')}</div>
+            </div>`;
+            
+          case 'trailer':
+            return `<div style="height:100%;overflow-y:auto;text-align:center">
+              <div style="font-size:48px;margin-bottom:20px">🎬 NEXUS OS V10.5</div>
+              <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:#00f0ff;margin-bottom:30px">Feature Showcase</div>
+              <div style="display:grid;gap:15px;text-align:left">
+                ${[
+                  { icon: '🤖', title: 'AI Chat & Copilot', desc: 'Multi-provider AI chat with contextual copilot assistance for gaming, coding, terminal, and more.' },
+                  { icon: '▶️', title: 'YouTube Player', desc: 'Search and play YouTube videos directly with playlist support.' },
+                  { icon: '🔧', title: 'Build Console', desc: 'Production build system with deployment to space.z.ai or custom targets.' },
+                  { icon: '⚙️', title: 'Compile Console', desc: 'Code compiler supporting JavaScript, TypeScript, Python, Java, and Rust.' },
+                  { icon: '📦', title: 'Dependency Manager', desc: 'Install and manage tools like Python, Java, Rust, Go, and more.' },
+                  { icon: '📻', title: 'Online Radio', desc: 'Search stations by name or genre using radio-browser.info API.' },
+                  { icon: '💻', title: 'IDE with AI Assist', desc: 'Code playground with live preview and AI-powered suggestions.' },
+                  { icon: '⌨️', title: 'Enhanced Terminal', desc: 'Full terminal with package installation and build commands.' },
+                  { icon: '🎮', title: 'Game Engine', desc: 'Games with keyboard and gamepad support.' },
+                ].map(f => `<div style="padding:15px;background:rgba(0,5,15,0.6);border:1px solid rgba(0,240,255,0.15);border-radius:10px;display:flex;gap:12px;align-items:flex-start"><span style="font-size:24px">${f.icon}</span><div><div style="color:#fff;font-size:13px;font-family:'Orbitron',sans-serif">${f.title}</div><div style="color:#607090;font-size:11px;margin-top:4px">${f.desc}</div></div></div>`).join('')}
+              </div>
+            </div>`;
+            
+          case 'settings':
+            return `<div style="height:100%;overflow-y:auto">
+              <div style="background:rgba(0,5,15,0.5);border:1px solid rgba(0,240,255,0.1);border-radius:12px;padding:15px;margin-bottom:12px">
+                <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:#00f0ff;margin-bottom:12px">🎮 GAME CONTROLS</div>
+                <div style="font-size:12px;color:#8090a0;line-height:1.8">
+                  <div>↑↓←→ : Movement</div>
+                  <div>Space : Action</div>
+                  <div>Gamepad: Supported</div>
+                </div>
+              </div>
+              <div style="background:rgba(0,5,15,0.5);border:1px solid rgba(0,240,255,0.1);border-radius:12px;padding:15px;margin-bottom:12px">
+                <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:#8b00ff;margin-bottom:12px">📺 NEXUS OS V10.5</div>
+                <div style="font-size:12px;color:#8090a0;line-height:1.8">
+                  <div>✨ AI Copilot Assistant</div>
+                  <div>🔧 Build & Compile Consoles</div>
+                  <div>📦 Dependency Manager</div>
+                  <div>📻 Online Radio Search</div>
+                  <div>🎮 Gamepad Support</div>
+                  <div>🎬 App Trailer</div>
+                </div>
+              </div>
+              <button onclick="localStorage.clear();showNotification('✅ Settings reset!')" style="${buttonStyle};width:100%;background:rgba(255,0,85,0.3)">🗑️ Reset All Settings</button>
+            </div>`;
+            
+          default:
+            return `<div style="text-align:center;padding:40px;color:#607090"><div style="font-size:48px;margin-bottom:10px">🚧</div><div>Coming soon...</div></div>`;
+        }
+      };
+      
+      // Public API
+      return {
+        setState: (key, value) => { state[key] = value; render(); },
+        handleLogin, guestLogin, logout,
+        openApp: (id) => { state.activeApp = id; render(); },
+        closeApp: () => { state.activeApp = null; render(); },
+        sendAiMessage, sendCopilotMessage,
+        searchYouTube, searchRadioOnline, searchRadioByGenre,
+        runBuild, deployBuild, runCompile,
+        installDependency,
+        playRadio: (station) => { playRadio(station); },
+        stopRadio: () => { stopRadio(); },
+        executeCommand: (cmd) => { executeCommand(cmd); },
+        runCode: () => { runCode(); },
+        getIdeAssist: () => { getIdeAssist(); },
+        startSnakeGame,
+        generateArt: async () => {
+          if (!state.artPrompt.trim() || state.artLoading) return;
+          state.artLoading = true; render();
+          try {
+            if (window.puter?.ai?.txt2img) {
+              const result = await window.puter.ai.txt2img(`${state.artPrompt}, digital art`);
+              if (result) { const url = typeof result === 'string' ? result : result.url || result.image; state.artImages.unshift({ url, prompt: state.artPrompt }); showNotification('🎨 Image generated!'); }
+            }
+          } catch (e) { showNotification('⚠️ Using placeholder'); state.artImages.unshift({ url: `https://picsum.photos/seed/${Date.now()}/512/512`, prompt: state.artPrompt }); }
+          state.artPrompt = ''; state.artLoading = false; render();
+        },
+        init: () => {
+          const bootSteps = [{ p: 15, t: '🔄 Loading neural pathways...' }, { p: 30, t: '🧠 Initializing AI subsystems...' }, { p: 45, t: '💾 Mounting virtual filesystem...' }, { p: 60, t: '🌐 Connecting to network...' }, { p: 75, t: '🔐 Loading security protocols...' }, { p: 90, t: '✨ Preparing user interface...' }, { p: 100, t: '🚀 System ready!' }];
+          let i = 0;
+          const bootInterval = setInterval(() => {
+            if (i < bootSteps.length) { state.bootProgress = bootSteps[i].p; state.bootText = bootSteps[i].t; render(); i++; }
+            else { clearInterval(bootInterval); setTimeout(() => { const savedUser = localStorage.getItem('nexus_user'); if (savedUser) { state.currentUser = JSON.parse(savedUser); state.phase = 'desktop'; } else { state.phase = 'login'; } render(); }, 500); }
+          }, 400);
+          
+          updateClock(); setInterval(updateClock, 1000);
+          window.addEventListener('resize', () => { state.isMobile = window.innerWidth < 768; render(); });
+          initGamepad();
+          
+          // Keyboard & Gamepad
+          window.addEventListener('keydown', (e) => {
+            if (state.snakeGameActive && state.activeApp === 'games') {
+              const dirs = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+              if (dirs[e.key]) { const opp = { up: 'down', down: 'up', left: 'right', right: 'left' }; if (opp[dirs[e.key]] !== state.snakeDirection) state.snakeDirection = dirs[e.key]; }
+            }
+          });
+          
+          // Game Loop
+          setInterval(() => {
+            if (state.snakeGameActive) {
+              const head = { ...state.snakePosition[0] };
+              if (state.snakeDirection === 'up') head.y--; if (state.snakeDirection === 'down') head.y++;
+              if (state.snakeDirection === 'left') head.x--; if (state.snakeDirection === 'right') head.x++;
+              if (head.x < 0 || head.x >= 15 || head.y < 0 || head.y >= 10 || state.snakePosition.some(s => s.x === head.x && s.y === head.y)) {
+                state.snakeGameActive = false;
+                if (state.gameScore > state.gameHighScore) { state.gameHighScore = state.gameScore; localStorage.setItem('nexus_highscore', state.gameHighScore.toString()); }
+                showNotification('💀 Game Over!'); render(); return;
+              }
+              state.snakePosition.unshift(head);
+              if (head.x === state.snakeFood.x && head.y === state.snakeFood.y) { state.gameScore += 10; state.snakeFood = { x: Math.floor(Math.random() * 15), y: Math.floor(Math.random() * 10) }; }
+              else state.snakePosition.pop();
+              render();
+            }
+          }, 200);
+          
+          render();
+        }
+      };
+    })();
+    
+    document.addEventListener('DOMContentLoaded', NEXUS_OS.init);
+  </script>
+</body>
+</html>
