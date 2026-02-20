@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Node.js Build Cloner</title>
-    <!-- JSZip for creating zip files -->
+    <title>Deep Cloner & Build Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- FileSaver for downloading -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <style>
         :root {
@@ -53,14 +51,9 @@
             font-weight: 600;
             transition: background 0.2s;
         }
-        button:hover {
-            background-color: #2ea043;
-        }
-        button:disabled {
-            background-color: #21262d;
-            color: #484f58;
-            cursor: not-allowed;
-        }
+        button:hover { background-color: #2ea043; }
+        button:disabled { background-color: #21262d; color: #484f58; cursor: not-allowed; }
+        
         #console {
             flex-grow: 1;
             padding: 20px;
@@ -76,25 +69,42 @@
         .log-error { color: var(--error-color); }
         .log-warn { color: #d29922; }
         .log-system { color: var(--accent-color); font-weight: bold; }
+        .progress-bar {
+            width: 100%;
+            background-color: #21262d;
+            height: 4px;
+            margin-top: 5px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.2s;
+        }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <input type="text" id="urlInput" placeholder="Enter URL to clone (e.g. https://example.com)" value="https://s12eh1dx2vs1-d.space.z.ai/">
-        <button id="startBtn" onclick="initCloning()">CLONE & BUILD</button>
+        <input type="text" id="urlInput" placeholder="Enter URL to deep clone" value="https://s12eh1dx2vs1-d.space.z.ai/">
+        <button id="startBtn" onclick="startDeepScan()">START DEEP SCAN & BUILD</button>
     </div>
 
     <div id="console">
-        <div class="log log-system">SYSTEM READY [Node.js Build Generator v3.0]</div>
-        <div class="log log-info">Commands available: npm install, npm run dev, npm start</div>
+        <div class="log log-system">SYSTEM READY [Deep Scan Module v3.0]</div>
+        <div class="log log-info">Awaiting command...</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
     </div>
 
     <script>
         const consoleEl = document.getElementById('console');
         const startBtn = document.getElementById('startBtn');
         const urlInput = document.getElementById('urlInput');
+        const progressFill = document.getElementById('progress');
 
+        // Helper for logging
         function log(message, type = 'info') {
             const line = document.createElement('div');
             line.className = `log log-${type}`;
@@ -103,195 +113,256 @@
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
 
+        function setProgress(percent) {
+            progressFill.style.width = `${percent}%`;
+        }
+
         function clearConsole() {
             consoleEl.innerHTML = '';
         }
 
-        async function initCloning() {
+        async function startDeepScan() {
             const url = urlInput.value.trim();
-            if (!url) {
-                log("Error: URL cannot be empty.", "error");
-                return;
-            }
+            if (!url) return;
 
             startBtn.disabled = true;
             clearConsole();
-            log("Initializing cloning process...", "system");
+            log("Initializing Deep Scan Algorithm...", "system");
+            setProgress(5);
 
             try {
-                // Step 1: Fetch HTML
-                log(`Targeting: ${url}`, "info");
-                log("Connecting via proxy...", "warn");
-                
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                const response = await fetch(proxyUrl);
-                
-                if (!response.ok) throw new Error(`Failed to fetch. Status: ${response.status}`);
-                
-                log("Connection established. Parsing DOM...", "success");
-                const htmlText = await response.text();
-
-                // Step 2: Process Assets
-                const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+                const proxy = 'https://api.allorigins.win/raw?url=';
+                const base = new URL(url);
                 const zip = new JSZip();
                 const publicFolder = zip.folder("public");
 
-                const base = new URL(url);
-                const downloads = [];
+                // 1. Fetch Main Page
+                log(`Target: ${url}`, "info");
+                const mainRes = await fetch(proxy + encodeURIComponent(url));
+                if (!mainRes.ok) throw new Error("Connection failed");
                 
-                const elements = doc.querySelectorAll('img[src], link[href], script[src]');
+                const mainHtml = await mainRes.text();
+                const mainDoc = new DOMParser().parseFromString(mainHtml, 'text/html');
                 
-                log(`Found ${elements.length} assets. Downloading...`, "info");
+                // Fix Base URL for assets
+                const baseTag = mainDoc.createElement('base');
+                baseTag.href = base.origin;
+                mainDoc.head.prepend(baseTag);
 
-                elements.forEach(el => {
-                    const srcAttr = el.tagName === 'LINK' ? 'href' : 'src';
-                    let src = el.getAttribute(srcAttr);
-                    
-                    if (src && !src.startsWith('data:')) {
-                        try {
-                            const absoluteUrl = new URL(src, base).href;
-                            const fileName = absoluteUrl.split('/').pop().split('?')[0] || 'asset';
-                            
-                            downloads.push(
-                                fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(absoluteUrl)}`)
-                                .then(res => res.blob())
-                                .then(blob => {
-                                    log(`Downloaded: ${fileName}`, "success");
-                                    publicFolder.file(fileName, blob);
-                                    el.setAttribute(srcAttr, fileName); 
-                                })
-                                .catch(() => log(`Skipped: ${fileName}`, "warn"))
-                            );
-                        } catch (e) { /* ignore */ }
+                setProgress(20);
+
+                // 2. Deep Scan Internal Links
+                log("Scanning internal links (Depth: 1)...", "system");
+                const links = new Set();
+                mainDoc.querySelectorAll('a[href]').forEach(a => {
+                    try {
+                        const href = a.getAttribute('href');
+                        const absUrl = new URL(href, base);
+                        // Only scan same-origin internal links
+                        if (absUrl.origin === base.origin && (absUrl.pathname.endsWith('/') || absUrl.pathname.endsWith('.html'))) {
+                            links.add(absUrl.href);
+                        }
+                    } catch (e) {}
+                });
+                
+                log(`Found ${links.size} internal pages to clone.`, "info");
+
+                // 3. Download Resources & Pages
+                const assets = new Map(); // URL -> filename
+                
+                // Extract assets from Main Page
+                extractAssets(mainDoc, assets, base);
+                
+                // Fetch Internal Pages
+                let processedLinks = 0;
+                const linkPromises = Array.from(links).map(async link => {
+                    try {
+                        const res = await fetch(proxy + encodeURIComponent(link));
+                        const text = await res.text();
+                        const subDoc = new DOMParser().parseFromString(text, 'text/html');
+                        
+                        // Save page
+                        const pageName = new URL(link).pathname.replace(/^\/|\/$/g, '') || 'index';
+                        const fileName = pageName.endsWith('.html') ? pageName : `${pageName}.html`;
+                        
+                        // Extract assets from sub-pages too
+                        extractAssets(subDoc, assets, base);
+                        
+                        // Rewrite links for local consistency (basic)
+                        subDoc.querySelectorAll('a[href]').forEach(a => {
+                            const h = a.getAttribute('href');
+                            if (h.startsWith('/') || h.startsWith(base.origin)) {
+                                try {
+                                   const u = new URL(h, base);
+                                   const localName = u.pathname.replace(/^\/|\/$/g, '') || 'index';
+                                   a.href = localName.endsWith('.html') ? localName : `${localName}.html`;
+                                } catch(e){}
+                            }
+                        });
+
+                        publicFolder.file(fileName, subDoc.documentElement.outerHTML);
+                        log(`Cloned Page: ${fileName}`, "success");
+                    } catch (e) {
+                        log(`Skipped Link: ${link}`, "warn");
                     }
+                    processedLinks++;
+                    setProgress(20 + (processedLinks / links.size) * 40);
                 });
 
-                await Promise.all(downloads);
-                
-                publicFolder.file("index.html", doc.documentElement.outerHTML);
-                log("Assets compiled into /public", "success");
+                await Promise.all(linkPromises);
 
-                // Step 3: Generate Build
-                log("Generating Node.js Project Structure...", "system");
-                generateNodeStructure(zip);
+                // 4. Download Assets
+                log(`Downloading ${assets.size} unique assets...`, "system");
+                let downloadedCount = 0;
+                const assetPromises = Array.from(assets.entries()).map(async ([assetUrl, fileName]) => {
+                    try {
+                        const res = await fetch(proxy + encodeURIComponent(assetUrl));
+                        const blob = await res.blob();
+                        publicFolder.file(fileName, blob);
+                        log(`Downloaded: ${fileName}`, "success");
+                    } catch (e) {
+                        log(`Asset Failed: ${fileName}`, "warn");
+                    }
+                    downloadedCount++;
+                    setProgress(60 + (downloadedCount / assets.size) * 20);
+                });
 
-                // Step 4: Zip
-                log("Compressing build into ZIP...", "info");
-                const content = await zip.generateAsync({type: "blob", compression: "DEFLATE"});
+                await Promise.all(assetPromises);
+
+                // 5. Check Missing Files
+                log("Verifying build integrity...", "system");
+                const missingFiles = [];
                 
-                log("Build ready. Downloading...", "success");
-                saveAs(content, `node-build-${Date.now()}.zip`);
+                // Check for Favicon
+                if (!assets.has(`${base.origin}/favicon.ico`)) {
+                    missingFiles.push({ url: `${base.origin}/favicon.ico`, name: 'favicon.ico' });
+                }
                 
-                log("Process Complete. Unzip and run 'npm install'", "system");
+                // Attempt to download missing standard files
+                for (const file of missingFiles) {
+                    try {
+                        const res = await fetch(proxy + encodeURIComponent(file.url));
+                        if (res.ok) {
+                            publicFolder.file(file.name, await res.blob());
+                            log(`Recovered Missing File: ${file.name}`, "success");
+                        }
+                    } catch (e) {}
+                }
+
+                // Save Main Index
+                publicFolder.file("index.html", mainDoc.documentElement.outerHTML);
+
+                // 6. Generate Node.js Build
+                log("Constructing Build Environment...", "system");
+                generateNodeBuild(zip);
+
+                // 7. Generate Zip
+                log("Packaging application...", "info");
+                setProgress(95);
+                const content = await zip.generateAsync({ type: "blob" });
+                
+                saveAs(content, `deep-clone-${Date.now()}.zip`);
+                setProgress(100);
+                log("Build Generated Successfully!", "system");
 
             } catch (err) {
-                log(`ERROR: ${err.message}`, "error");
+                log(`CRITICAL ERROR: ${err.message}`, "error");
             } finally {
                 startBtn.disabled = false;
             }
         }
 
-        function generateNodeStructure(zip) {
-            // 1. package.json with NPM Scripts
+        function extractAssets(doc, assets, base) {
+            // Scan Images, Scripts, Stylesheets
+            const selectors = [
+                { tag: 'img', attr: 'src' },
+                { tag: 'script', attr: 'src' },
+                { tag: 'link', attr: 'href' }, // CSS, Icons
+                { tag: 'source', attr: 'src' },
+                { tag: 'video', attr: 'poster' }
+            ];
+
+            selectors.forEach(({ tag, attr }) => {
+                doc.querySelectorAll(`${tag}[${attr}]`).forEach(el => {
+                    const val = el.getAttribute(attr);
+                    if (val && !val.startsWith('data:')) {
+                        try {
+                            const abs = new URL(val, base);
+                            // Clean filename
+                            let fileName = abs.pathname.split('/').pop().split('?')[0];
+                            if (!fileName) fileName = `asset_${Math.random().toString(36).substr(2, 5)}`;
+                            
+                            assets.set(abs.href, fileName);
+                            el.setAttribute(attr, fileName); // Rewrite path
+                        } catch (e) {}
+                    }
+                });
+            });
+        }
+
+        function generateNodeBuild(zip) {
+            // 1. package.json
             const pJson = {
-                name: "cloned-web-app",
+                name: "deep-cloned-app",
                 version: "1.0.0",
-                description: "Locally cloned web application",
+                description: "Auto-generated deployment package",
                 main: "server.js",
                 scripts: {
-                    "start": "node server.js",
-                    "dev": "nodemon server.js"
+                    start: "node server.js",
+                    dev: "nodemon server.js",
+                    install: "npm install"
                 },
-                engines: {
-                    "node": ">=12.0.0 <=17.9.1"
-                },
-                devDependencies: {
-                    "nodemon": "^2.0.15"
-                }
+                engines: { node: ">=12.0.0 <=17.9.1" },
+                devDependencies: { nodemon: "^2.0.15" }
             };
             zip.file("package.json", JSON.stringify(pJson, null, 2));
-            log("Created package.json (Scripts: start, dev)", "info");
 
-            // 2. server.js (Static Server)
-            const serverCode = `
+            // 2. .gitignore
+            zip.file(".gitignore", `node_modules/\n.env\n.DS_Store\n*.log`);
+
+            // 3. server.js
+            const serverJs = `
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = process.env.PORT || 3000;
-const PUBLIC_DIR = path.join(__dirname, 'public');
+const PORT = 3000;
+const ROOT = path.join(__dirname, 'public');
 
-const MIME_TYPES = {
+const MIME = {
     '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript',
-    '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg',
-    '.gif': 'image/gif', '.svg': 'image/svg+xml', '.ico': 'image/x-icon'
+    '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon',
+    '.svg': 'image/svg+xml', '.json': 'application/json'
 };
 
 const server = http.createServer((req, res) => {
-    console.log('[Request] ' + req.url);
+    let file = path.join(ROOT, req.url === '/' ? 'index.html' : req.url);
+    const ext = path.extname(file).toLowerCase();
+    
+    // Security: Prevent directory traversal
+    if (!file.startsWith(ROOT)) { res.writeHead(403); return res.end('Forbidden'); }
 
-    let filePath = path.join(PUBLIC_DIR, req.url === '/' ? 'index.html' : req.url);
-    const ext = path.extname(filePath).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-    fs.readFile(filePath, (err, content) => {
+    fs.readFile(file, (err, data) => {
         if (err) {
-            if (err.code === 'ENOENT') {
-                // Fallback to index.html for SPA or 404
-                fs.readFile(path.join(PUBLIC_DIR, 'index.html'), (e, fallback) => {
-                    if (e) {
-                        res.writeHead(404);
-                        res.end('Not Found');
-                    } else {
-                        res.writeHead(200, { 'Content-Type': 'text/html' });
-                        res.end(fallback, 'utf-8');
-                    }
-                });
-            } else {
-                res.writeHead(500);
-                res.end('Server Error');
-            }
+            // Serve 404 if missing, but try to serve index.html for SPA routing
+            fs.readFile(path.join(ROOT, '404.html'), (e, custom404) => {
+                res.writeHead(404, { 'Content-Type': 'text/html' });
+                res.end(custom404 || 'Not Found');
+            });
         } else {
-            res.writeHead(200, { 'Content-Type': contentType });
-            res.end(content, 'utf-8');
+            res.writeHead(200, { 'Content-Type': MIME[ext] || 'text/plain' });
+            res.end(data);
         }
     });
 });
 
-server.listen(PORT, () => {
-    console.log(\`Server running at http://localhost:\${PORT}/\`);
-});
+server.listen(PORT, () => console.log(\`Running on http://localhost:\${PORT}\`));
             `;
-            zip.file("server.js", serverCode.trim());
-            log("Created server.js", "info");
+            zip.file("server.js", serverJs.trim());
 
-            // 3. README.md
-            const readme = `
-# Cloned Project
-
-## Installation
-
-1. Ensure you have Node.js installed (Recommended v17.9.1).
-2. Open terminal in this folder.
-
-### Install Dependencies
-\`\`\`bash
-npm install
-\`\`\`
-
-### Run in Development (Auto-reload)
-\`\`\`bash
-npm run dev
-\`\`\`
-
-### Run in Production
-\`\`\`bash
-npm start
-\`\`\`
-
-Visit http://localhost:3000 in your browser.
-            `;
-            zip.file("README.md", readme.trim());
+            // 4. 404.html (Missing file completion)
+            const notFound = `<!DOCTYPE html><html><body><h1>404 - Not Found</h1><p>The cloned page was not found.</p></body></html>`;
+            zip.folder("public").file("404.html", notFound);
         }
     </script>
 </body>
