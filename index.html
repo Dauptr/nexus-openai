@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Node.js Build Cloner</title>
-    <!-- Libraries for Zipping and Downloading -->
+    <title>Advanced Node.js Build Cloner</title>
+    <!-- JSZip for creating zip files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- FileSaver for downloading -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <style>
         :root {
@@ -75,30 +76,18 @@
         .log-error { color: var(--error-color); }
         .log-warn { color: #d29922; }
         .log-system { color: var(--accent-color); font-weight: bold; }
-        
-        /* Animation for typing effect */
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-        .cursor::after {
-            content: "█";
-            animation: blink 1s infinite;
-            color: var(--accent-color);
-        }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
         <input type="text" id="urlInput" placeholder="Enter URL to clone (e.g. https://example.com)" value="https://s12eh1dx2vs1-d.space.z.ai/">
-        <button id="startBtn" onclick="initCloning()">START CLONE & BUILD</button>
+        <button id="startBtn" onclick="initCloning()">CLONE & BUILD</button>
     </div>
 
     <div id="console">
-        <div class="log log-system">SYSTEM READY [Node Builder v2.0]</div>
-        <div class="log log-info">Waiting for input...</div>
+        <div class="log log-system">SYSTEM READY [Node.js Build Generator v3.0]</div>
+        <div class="log log-info">Commands available: npm install, npm run dev, npm start</div>
     </div>
 
     <script>
@@ -106,7 +95,6 @@
         const startBtn = document.getElementById('startBtn');
         const urlInput = document.getElementById('urlInput');
 
-        // Helper to print to console
         function log(message, type = 'info') {
             const line = document.createElement('div');
             line.className = `log log-${type}`;
@@ -133,32 +121,27 @@
             try {
                 // Step 1: Fetch HTML
                 log(`Targeting: ${url}`, "info");
-                log("Bypassing CORS via public proxy...", "warn");
+                log("Connecting via proxy...", "warn");
                 
                 const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                 const response = await fetch(proxyUrl);
                 
                 if (!response.ok) throw new Error(`Failed to fetch. Status: ${response.status}`);
                 
-                log("Connection established. Reading response...", "success");
+                log("Connection established. Parsing DOM...", "success");
                 const htmlText = await response.text();
 
                 // Step 2: Process Assets
-                log("Parsing HTML DOM...", "info");
                 const doc = new DOMParser().parseFromString(htmlText, 'text/html');
                 const zip = new JSZip();
                 const publicFolder = zip.folder("public");
 
-                // Fix base URL for resolving relative paths
                 const base = new URL(url);
-                
-                // Array to hold download promises
                 const downloads = [];
                 
-                // Select elements
                 const elements = doc.querySelectorAll('img[src], link[href], script[src]');
                 
-                log(`Found ${elements.length} potential assets. Starting download threads...`, "info");
+                log(`Found ${elements.length} assets. Downloading...`, "info");
 
                 elements.forEach(el => {
                     const srcAttr = el.tagName === 'LINK' ? 'href' : 'src';
@@ -169,71 +152,67 @@
                             const absoluteUrl = new URL(src, base).href;
                             const fileName = absoluteUrl.split('/').pop().split('?')[0] || 'asset';
                             
-                            // Push download promise
                             downloads.push(
                                 fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(absoluteUrl)}`)
                                 .then(res => res.blob())
                                 .then(blob => {
                                     log(`Downloaded: ${fileName}`, "success");
                                     publicFolder.file(fileName, blob);
-                                    el.setAttribute(srcAttr, fileName); // Rewrite path in HTML
+                                    el.setAttribute(srcAttr, fileName); 
                                 })
-                                .catch(() => log(`Skipped: ${fileName} (Error)`, "warn"))
+                                .catch(() => log(`Skipped: ${fileName}`, "warn"))
                             );
-                        } catch (e) { /* ignore invalid URL */ }
+                        } catch (e) { /* ignore */ }
                     }
                 });
 
-                // Wait for all downloads
                 await Promise.all(downloads);
                 
-                // Save modified HTML
                 publicFolder.file("index.html", doc.documentElement.outerHTML);
-                log("HTML processed and saved to public/index.html", "success");
+                log("Assets compiled into /public", "success");
 
-                // Step 3: Generate Build (Node.js)
-                log("Generating Node.js Build Environment...", "system");
+                // Step 3: Generate Build
+                log("Generating Node.js Project Structure...", "system");
                 generateNodeStructure(zip);
 
-                // Step 4: Pack and Download
-                log("Paging files into ZIP archive...", "info");
+                // Step 4: Zip
+                log("Compressing build into ZIP...", "info");
                 const content = await zip.generateAsync({type: "blob", compression: "DEFLATE"});
                 
-                log("Build complete. Initializing download...", "success");
+                log("Build ready. Downloading...", "success");
                 saveAs(content, `node-build-${Date.now()}.zip`);
                 
-                log("Download started successfully.", "system");
-                log("To run: Unzip -> Open terminal -> Run 'node server.js'", "info");
+                log("Process Complete. Unzip and run 'npm install'", "system");
 
             } catch (err) {
-                log(`CRITICAL ERROR: ${err.message}`, "error");
-                log("Please check the URL or try again. Some sites block scraping.", "warn");
+                log(`ERROR: ${err.message}`, "error");
             } finally {
                 startBtn.disabled = false;
             }
         }
 
         function generateNodeStructure(zip) {
-            // 1. package.json (Targeting Node v17.9.1)
+            // 1. package.json with NPM Scripts
             const pJson = {
-                name: "cloned-deployment",
+                name: "cloned-web-app",
                 version: "1.0.0",
-                description: "Static server generated by WebCloner",
+                description: "Locally cloned web application",
                 main: "server.js",
                 scripts: {
-                    start: "node server.js",
-                    test: "echo \"Error: no test specified\" && exit 1"
+                    "start": "node server.js",
+                    "dev": "nodemon server.js"
                 },
-                keywords: ["clone", "static-server"],
-                author: "",
-                license: "ISC",
                 engines: {
                     "node": ">=12.0.0 <=17.9.1"
+                },
+                devDependencies: {
+                    "nodemon": "^2.0.15"
                 }
             };
             zip.file("package.json", JSON.stringify(pJson, null, 2));
+            log("Created package.json (Scripts: start, dev)", "info");
 
-            // 2. server.js (Optimized for Node 17+)
+            // 2. server.js (Static Server)
             const serverCode = `
 const http = require('http');
 const fs = require('fs');
@@ -243,25 +222,14 @@ const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 const MIME_TYPES = {
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'application/javascript',
-    '.json': 'application/json',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.gif': 'image/gif',
-    '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon',
-    '.webp': 'image/webp',
-    '.woff': 'font/woff',
-    '.woff2': 'font/woff2',
-    '.ttf': 'font/ttf'
+    '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript',
+    '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg',
+    '.gif': 'image/gif', '.svg': 'image/svg+xml', '.ico': 'image/x-icon'
 };
 
 const server = http.createServer((req, res) => {
-    console.log(\`[\${new Date().toISOString()}] \${req.method} \${req.url}\`);
+    console.log('[Request] ' + req.url);
 
-    // Resolve file path
     let filePath = path.join(PUBLIC_DIR, req.url === '/' ? 'index.html' : req.url);
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
@@ -269,11 +237,11 @@ const server = http.createServer((req, res) => {
     fs.readFile(filePath, (err, content) => {
         if (err) {
             if (err.code === 'ENOENT') {
-                // Fallback to index.html for SPA support or 404
-                fs.readFile(path.join(PUBLIC_DIR, 'index.html'), (err, fallback) => {
-                    if (err) {
-                        res.writeHead(404, { 'Content-Type': 'text/plain' });
-                        res.end('404 Not Found');
+                // Fallback to index.html for SPA or 404
+                fs.readFile(path.join(PUBLIC_DIR, 'index.html'), (e, fallback) => {
+                    if (e) {
+                        res.writeHead(404);
+                        res.end('Not Found');
                     } else {
                         res.writeHead(200, { 'Content-Type': 'text/html' });
                         res.end(fallback, 'utf-8');
@@ -292,29 +260,38 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
     console.log(\`Server running at http://localhost:\${PORT}/\`);
-    console.log('Press Ctrl+C to stop.');
 });
             `;
             zip.file("server.js", serverCode.trim());
+            log("Created server.js", "info");
 
             // 3. README.md
             const readme = `
-# Cloned Project Deployment
+# Cloned Project
 
-## Requirements
-- Node.js (Recommended v17.9.1)
+## Installation
 
-## Installation Steps
-1. Extract the ZIP file.
-2. Open your terminal/command prompt in the extracted folder.
-3. Start the server:
-   \`\`\`bash
-   node server.js
-   \`\`\`
-4. Open your browser and visit: http://localhost:3000
+1. Ensure you have Node.js installed (Recommended v17.9.1).
+2. Open terminal in this folder.
+
+### Install Dependencies
+\`\`\`bash
+npm install
+\`\`\`
+
+### Run in Development (Auto-reload)
+\`\`\`bash
+npm run dev
+\`\`\`
+
+### Run in Production
+\`\`\`bash
+npm start
+\`\`\`
+
+Visit http://localhost:3000 in your browser.
             `;
             zip.file("README.md", readme.trim());
-            log("Generated: package.json, server.js, README.md", "info");
         }
     </script>
 </body>
